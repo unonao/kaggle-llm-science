@@ -1,9 +1,8 @@
 defaults:
   - _self_
   - check: "000"
+  - exp001: "base"
   - override hydra/job_logging: none  # hydraで自動的にログファイルが生成されるのを防ぐ
-
-
 
 hydra:
   # hydraで自動的にログファイルが生成されるのを防ぐ

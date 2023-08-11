@@ -1,3 +1,8 @@
+.py3
+.virtual_documents
+input/
+output/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
