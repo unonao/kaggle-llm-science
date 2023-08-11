@@ -4,6 +4,8 @@ defaults:
   - exp001: "base"
   - override hydra/job_logging: none  # hydraで自動的にログファイルが生成されるのを防ぐ
 
+debug: False
+
 hydra:
   # hydraで自動的にログファイルが生成されるのを防ぐ
   output_subdir: null

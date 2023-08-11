@@ -1,8 +1,9 @@
-debug: false
+debug: ${debug}
 seed: 7
 use_train_num: 100
-model_name: microsoft/deberta-v3-large
-early_stopping_patience: 1
+model_name: microsoft/deberta-v3-base
+early_stopping_patience: 5
+
 training_args:
   fp16: true
   warmup_ratio: 0.8
@@ -10,7 +11,7 @@ training_args:
   weight_decay: 0.01
   per_device_train_batch_size: 2
   per_device_eval_batch_size: 4
-  num_train_epochs: 7
+  num_train_epochs: 20
   logging_strategy: epoch
   evaluation_strategy: epoch
   save_strategy: epoch
@@ -19,7 +20,6 @@ training_args:
   load_best_model_at_end: true
   report_to: wandb
   output_dir: ""
-  ddp_backend: 'nccl'
   seed: ${..seed}
 comp_data_path: input/kaggle-llm-science-exam
 additional_data_path: input/additional-train-data-for-llm-science-exam

@@ -1,0 +1,4 @@
+defaults:
+  - base
+
+use_train_num: 6000
