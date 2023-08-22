@@ -9,7 +9,6 @@ import hydra
 import numpy as np
 import pandas as pd
 import torch
-import wandb
 from datasets import Dataset
 from hydra.core.hydra_config import HydraConfig
 from omegaconf import DictConfig, OmegaConf
@@ -23,9 +22,15 @@ from transformers import (
 )
 from transformers.tokenization_utils_base import PaddingStrategy, PreTrainedTokenizerBase
 
+import wandb
+
 sys.path.append(os.pardir)
 
 import utils
+
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
+os.environ["TRANSFORMERS_NO_ADVISORY_WARNINGS"] = "true"
+
 
 @dataclass
 class DataCollatorForMultipleChoice:
@@ -57,7 +62,7 @@ class DataCollatorForMultipleChoice:
 
 
 @hydra.main(version_base=None, config_path="../yamls", config_name="config")
-def main(c : DictConfig) -> None:    
+def main(c: DictConfig) -> None:
     OmegaConf.resolve(c)  # debugやseedを解決
     cfg = c.exp001
 
@@ -66,7 +71,7 @@ def main(c : DictConfig) -> None:
     output_path = Path(f"./output/{exp_name}")
     cfg.training_args.output_dir = str(output_path)
 
-    print(cfg)    
+    print(cfg)
 
     utils.seed_everything(cfg.seed)
 
@@ -81,7 +86,13 @@ def main(c : DictConfig) -> None:
 
     df_valid = pd.read_csv(cfg.comp_data_path + "/train.csv")
     df_valid = df_valid.drop(columns="id")
-    df_train = pd.read_csv(cfg.additional_data_path + "/6000_train_examples.csv").head(cfg.use_train_num)
+    df_train = pd.concat(
+        [
+            pd.read_csv(cfg.additional_data_path + "/6000_train_examples.csv"),
+            pd.read_csv(cfg.additional_data_path + "/extra_train_set.csv"),
+        ]
+    )
+    df_train = df_train.head(cfg.use_train_num)
     df_train.reset_index(inplace=True, drop=True)
     if cfg.debug:
         df_train = df_train.head()
@@ -91,10 +102,10 @@ def main(c : DictConfig) -> None:
     dataset_train = Dataset.from_pandas(df_train)
     dataset_valid = Dataset.from_pandas(df_valid)
 
-
     tokenizer = AutoTokenizer.from_pretrained(cfg.model_name)
     option_to_index = {option: idx for idx, option in enumerate("ABCDE")}
     index_to_option = {v: k for k, v in option_to_index.items()}
+
     def preprocess(example):
         first_sentence = [example["prompt"]] * 5
         second_sentences = [example[option] for option in "ABCDE"]
@@ -102,17 +113,32 @@ def main(c : DictConfig) -> None:
         tokenized_example["label"] = option_to_index[example["answer"]]
 
         return tokenized_example
-    
-    tokenized_dataset_train = dataset_train.map(preprocess, remove_columns=["prompt", "A", "B", "C", "D", "E", "answer"])
-    tokenized_dataset_valid = dataset_valid.map(preprocess, remove_columns=["prompt", "A", "B", "C", "D", "E", "answer"])
 
-    def map_k(y_true, y_pred, k=3):
-        ap_at_3 = 0.0
-        for i in range(len(y_true)):
-            if y_true[i] in y_pred[i][:k]:
-                ap_at_3 += 1
-        return ap_at_3 / len(y_true)
+    tokenized_dataset_train = dataset_train.map(
+        preprocess, remove_columns=["prompt", "A", "B", "C", "D", "E", "answer"]
+    )
+    tokenized_dataset_valid = dataset_valid.map(
+        preprocess, remove_columns=["prompt", "A", "B", "C", "D", "E", "answer"]
+    )
 
+    # https://www.kaggle.com/code/philippsinger/h2ogpt-perplexity-ranking
+    def precision_at_k(r, k):
+        """Precision at k"""
+        assert k <= len(r)
+        assert k != 0
+        return sum(int(x) for x in r[:k]) / k
+
+    def map_k(true_items, predictions, K=3):
+        """Score is mean average precision at 3"""
+        U = len(predictions)
+        map_at_k = 0.0
+        for u in range(U):
+            user_preds = predictions[u]
+            user_true = true_items[u]
+            user_results = [1 if item == user_true else 0 for item in user_preds]
+            for k in range(min(len(user_preds), K)):
+                map_at_k += precision_at_k(user_results, k + 1) * user_results[k]
+        return map_at_k / U
 
     def predictions_to_map_output(predictions):
         sorted_answer_indices = np.argsort(-predictions)  # Sortting indices in descending order
@@ -122,7 +148,6 @@ def main(c : DictConfig) -> None:
         )  # Transforming indices to options - i.e., 0 --> A
         return np.apply_along_axis(lambda row: " ".join(row), 1, top_answers)
 
-
     def compute_metrics(eval_preds):
         logits, labels = eval_preds
         y_pred = predictions_to_map_output(logits)
@@ -130,9 +155,7 @@ def main(c : DictConfig) -> None:
         return {cfg.training_args.metric_for_best_model: map_k(y_true, y_pred)}
 
     ## Training
-    training_args = TrainingArguments(
-        **OmegaConf.to_container(cfg)["training_args"]
-    )
+    training_args = TrainingArguments(**OmegaConf.to_container(cfg)["training_args"])
 
     model = AutoModelForMultipleChoice.from_pretrained(cfg.model_name)
 
@@ -155,9 +178,10 @@ def main(c : DictConfig) -> None:
         valid_pred_letters = predictions_to_map_output(valid_pred)
         valid_label = df_valid["answer"].to_numpy()
         valid_map3 = map_k(valid_label, valid_pred_letters)
-        result_dict = {"best_map@3":valid_map3 }
+        result_dict = {"best_map@3": valid_map3}
         print(result_dict)
         wandb.log(result_dict)
+
 
 if __name__ == "__main__":
     main()

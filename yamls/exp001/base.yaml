@@ -9,8 +9,9 @@ training_args:
   warmup_ratio: 0.8
   learning_rate: 5.0e-06
   weight_decay: 0.01
-  per_device_train_batch_size: 2
-  per_device_eval_batch_size: 4
+  dataloader_num_workers: 8
+  per_device_train_batch_size: 12
+  per_device_eval_batch_size: 12
   num_train_epochs: 20
   logging_strategy: epoch
   evaluation_strategy: epoch
