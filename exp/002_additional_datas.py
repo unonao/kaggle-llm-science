@@ -87,7 +87,6 @@ def main(c: DictConfig) -> None:
     df_valid = pd.read_csv(cfg.comp_data_path + "/train.csv")
     df_valid = df_valid.drop(columns="id")
     df_train = pd.concat([pd.read_csv(path) for path in cfg.additional_data_paths])
-    df_train = df_train.head(cfg.use_train_num)
     df_train.reset_index(inplace=True, drop=True)
     if cfg.debug:
         df_train = df_train.head()

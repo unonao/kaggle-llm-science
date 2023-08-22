@@ -1,6 +1,5 @@
 debug: ${debug}
 seed: 7
-use_train_num: 100
 model_name: microsoft/deberta-v3-base
 early_stopping_patience: 5
 
