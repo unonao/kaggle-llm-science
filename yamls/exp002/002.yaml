@@ -1,0 +1,14 @@
+defaults:
+  - base
+
+model_name: microsoft/deberta-v3-large
+
+training_args:
+  per_device_train_batch_size: 3
+  per_device_eval_batch_size: 3
+
+additional_data_paths: 
+  - input/additional-train-data-for-llm-science-exam/6000_train_examples.csv
+  - input/additional-train-data-for-llm-science-exam/extra_train_set.csv
+  - input/15k-high-quality-examples/15k_gpt3.5-turbo.csv
+  - input/15k-high-quality-examples/5900_examples.csv

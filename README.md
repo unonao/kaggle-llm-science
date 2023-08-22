@@ -22,6 +22,7 @@ python exp/001_additional_data.py exp001="003"
 python exp/001_additional_data.py exp001="004"
 python exp/002_additional_datas.py exp002="000"
 python exp/002_additional_datas.py exp002="001"
+python exp/002_additional_datas.py exp002="002"
 ```
 
 ```sh
