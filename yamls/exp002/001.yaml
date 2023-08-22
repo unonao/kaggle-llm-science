@@ -1,0 +1,8 @@
+defaults:
+  - base
+
+additional_data_paths: 
+  - input/additional-train-data-for-llm-science-exam/6000_train_examples.csv
+  - input/additional-train-data-for-llm-science-exam/extra_train_set.csv
+  - input/15k-high-quality-examples/15k_gpt3.5-turbo.csv
+  - input/15k-high-quality-examples/5900_examples.csv

@@ -20,9 +20,11 @@ python exp/001_additional_data.py exp001="001"
 python exp/001_additional_data.py exp001="002"
 python exp/001_additional_data.py exp001="003"
 python exp/001_additional_data.py exp001="004"
+python exp/002_additional_datas.py exp002="000"
+python exp/002_additional_datas.py exp002="001"
 ```
 
 ```sh
 kaggle datasets create -p llm-science-models --dir-mode zip
-kaggle datasets version -p llm-science-models/ -m v1.0.2  --dir-mode zip
+kaggle datasets version -p llm-science-models/ -m v1.0.3  --dir-mode zip
 ```
