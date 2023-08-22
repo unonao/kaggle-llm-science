@@ -26,5 +26,5 @@ python exp/002_additional_datas.py exp002="001"
 
 ```sh
 kaggle datasets create -p llm-science-models --dir-mode zip
-kaggle datasets version -p llm-science-models/ -m v1.0.3  --dir-mode zip
+kaggle datasets version -p llm-science-models/ -m v1.0.4  --dir-mode zip
 ```
