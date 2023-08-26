@@ -1,11 +1,16 @@
 {
     "[python]": {
         "editor.defaultFormatter": "ms-python.black-formatter",
-        // ファイルの保存時にフォーマットを自動実行する場合
+        // ファイルの保存時にフォーマットを自動実行する
         "editor.formatOnSave": true
     },
-    // 最大文字数などのオプション引数を指定する場合
+    // 最大文字数などのオプション引数を指定する
     "black-formatter.args": [
         "--line-length=119"
     ],
+    // docker環境では解決できないエラーを無視する
+    "python.analysis.diagnosticSeverityOverrides": {
+        "reportMissingImports": "none",
+        "reportMissingModuleSource": "none",
+    }
 }

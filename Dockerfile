@@ -12,3 +12,11 @@ RUN python3 -m pip install --upgrade pip \
 
 RUN pip install --no-cache-dir \
     hydra-core slack_sdk
+
+# https://github.com/tensorflow/io/issues/1755#issuecomment-1423908869
+RUN python -m pip install tensorflow-io 
+RUN python -m pip uninstall -y tensorflow-io
+
+RUN pip install --no-cache-dir \
+    faiss-gpu==1.7.2 sentence-transformers blingfire==0.1.8 peft==0.4.0 datasets==2.14.3 trl==0.5.0
+

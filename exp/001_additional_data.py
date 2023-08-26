@@ -12,15 +12,10 @@ import torch
 from datasets import Dataset
 from hydra.core.hydra_config import HydraConfig
 from omegaconf import DictConfig, OmegaConf
-from transformers import (
-    AutoModel,
-    AutoModelForMultipleChoice,
-    AutoTokenizer,
-    EarlyStoppingCallback,
-    Trainer,
-    TrainingArguments,
-)
-from transformers.tokenization_utils_base import PaddingStrategy, PreTrainedTokenizerBase
+from transformers import (AutoModel, AutoModelForMultipleChoice, AutoTokenizer,
+                          EarlyStoppingCallback, Trainer, TrainingArguments)
+from transformers.tokenization_utils_base import (PaddingStrategy,
+                                                  PreTrainedTokenizerBase)
 
 import wandb
 
@@ -64,13 +59,12 @@ class DataCollatorForMultipleChoice:
 @hydra.main(version_base=None, config_path="../yamls", config_name="config")
 def main(c: DictConfig) -> None:
     OmegaConf.resolve(c)  # debugやseedを解決
-    cfg = c.exp001
+    cfg = c.exp
 
     runtime_choices = HydraConfig.get().runtime.choices
-    exp_name = f"{Path(sys.argv[0]).stem}/{runtime_choices.exp001}"
+    exp_name = f"{Path(sys.argv[0]).stem}/{runtime_choices.exp.split('/')[-1]}"
     output_path = Path(f"./output/{exp_name}")
     cfg.training_args.output_dir = str(output_path)
-
     print(cfg)
 
     utils.seed_everything(cfg.seed)

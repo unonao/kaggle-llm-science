@@ -15,17 +15,18 @@ docker compose up # jupyter lab 起動
 ```
 
 ```sh
-python exp/001_additional_data.py exp001="000" 
-python exp/001_additional_data.py exp001="001"
-python exp/001_additional_data.py exp001="002"
-python exp/001_additional_data.py exp001="003"
-python exp/001_additional_data.py exp001="004"
-python exp/002_additional_datas.py exp002="000"
-python exp/002_additional_datas.py exp002="001"
-python exp/002_additional_datas.py exp002="002"
+python exp/001_additional_data.py exp=001/000 debug=true
+python exp/001_additional_data.py exp=001/001
+python exp/001_additional_data.py exp=001/002
+python exp/001_additional_data.py exp=001/003
+python exp/001_additional_data.py exp=001/004
+python exp/002_additional_datas.py exp=002/000
+python exp/002_additional_datas.py exp=002/001
+python exp/002_additional_datas.py exp=002/002
+python preprocess/000_base.py preprocess=000/000
 ```
 
 ```sh
 kaggle datasets create -p llm-science-models --dir-mode zip
-kaggle datasets version -p llm-science-models/ -m v1.0.4  --dir-mode zip
+kaggle datasets version -p llm-science-models/ -m v1.0.5  --dir-mode zip
 ```

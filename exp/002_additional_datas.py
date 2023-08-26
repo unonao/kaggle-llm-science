@@ -64,10 +64,10 @@ class DataCollatorForMultipleChoice:
 @hydra.main(version_base=None, config_path="../yamls", config_name="config")
 def main(c: DictConfig) -> None:
     OmegaConf.resolve(c)  # debugやseedを解決
-    cfg = c.exp002  # TODO: コピーしたら変える
+    cfg = c.exp
 
     runtime_choices = HydraConfig.get().runtime.choices
-    exp_name = f"{Path(sys.argv[0]).stem}/{runtime_choices.exp002}"  # TODO: コピーしたら変える
+    exp_name = f"{Path(sys.argv[0]).stem}/{runtime_choices.exp.split('/')[-1]}"
     output_path = Path(f"./output/{exp_name}")
     cfg.training_args.output_dir = str(output_path)
 
