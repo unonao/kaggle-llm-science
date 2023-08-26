@@ -18,5 +18,5 @@ RUN python -m pip install tensorflow-io
 RUN python -m pip uninstall -y tensorflow-io
 
 RUN pip install --no-cache-dir \
-    faiss-gpu==1.7.2 sentence-transformers blingfire==0.1.8 peft==0.4.0 datasets==2.14.3 trl==0.5.0
+    faiss-gpu==1.7.2 sentence-transformers blingfire==0.1.8 peft==0.4.0 datasets==2.14.3 trl==0.5.0 triton
 
