@@ -28,9 +28,10 @@ python exp/003_retrieval.py exp=003/000
 python exp/004_retrieval_truncate.py exp=004/000
 python exp/004_retrieval_truncate.py exp=004/001
 python exp/005_retrieval.py exp=005/000 
+python exp/005_retrieval.py exp=005/001
 ```
 
 ```sh
 kaggle datasets create -p llm-science-models --dir-mode zip
-kaggle datasets version -p llm-science-models/ -m v1.1.2  --dir-mode zip
+kaggle datasets version -p llm-science-models/ -m v1.1.3  --dir-mode zip
 ```
