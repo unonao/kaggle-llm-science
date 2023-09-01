@@ -1,0 +1,27 @@
+defaults:
+  - 006/base@_here_
+
+early_stopping_patience: 3
+
+max_length: 100 # TODO: 
+
+model_name: microsoft/deberta-v3-large
+sep_token : [SEP]
+
+training_args:
+  gradient_accumulation_steps: 4
+  per_device_train_batch_size: 1
+  per_device_eval_batch_size: 1
+  
+additional_data_paths: 
+  - preprocessed/001/000/6000_train_examples.csv
+  - preprocessed/001/000/extra_train_set.csv
+  - preprocessed/001/000/15k_gpt3.5-turbo.csv
+  - preprocessed/001/000/5900_examples.csv
+  - preprocessed/001/000/test.csv # 3k
+  - preprocessed/001/000/stem_1k_v1.csv
+
+valid_data_paths: 
+  preprocessed/001/000/train.csv: 200
+  preprocessed/001/000/6000_all_categories_questions.csv: 200
+  preprocessed/001/000/6000_wiki_en_sci_questions.csv: 400

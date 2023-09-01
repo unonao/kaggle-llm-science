@@ -2,10 +2,10 @@ data_paths:
   #- input/kaggle-llm-science-exam/train.csv
   #- input/additional-train-data-for-llm-science-exam/6000_train_examples.csv
   #- input/additional-train-data-for-llm-science-exam/extra_train_set.csv
-  #- input/15k-high-quality-examples/15k_gpt3.5-turbo.csv
-  #- input/15k-high-quality-examples/5900_examples.csv
-  #- input/llm-science-3k-data/test.csv
-  #- input/wikipedia-stem-1k/stem_1k_v1.csv
+  - input/15k-high-quality-examples/15k_gpt3.5-turbo.csv
+  - input/15k-high-quality-examples/5900_examples.csv
+  - input/llm-science-3k-data/test.csv
+  - input/wikipedia-stem-1k/stem_1k_v1.csv
   - input/sci-or-not-sci-hypthesis-testing-pack/6000_all_categories_questions.csv
   - input/sci-or-not-sci-hypthesis-testing-pack/6000_wiki_en_sci_questions.csv
 
