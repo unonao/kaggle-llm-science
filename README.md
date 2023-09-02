@@ -37,5 +37,5 @@ python preprocess/001.py preprocess=001/000
 
 ```sh
 kaggle datasets create -p llm-science-models --dir-mode zip
-kaggle datasets version -p llm-science-models/ -m v1.1.4  --dir-mode zip
+kaggle datasets version -p llm-science-models/ -m v1.2.0  --dir-mode zip
 ```

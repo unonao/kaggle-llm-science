@@ -1,0 +1,9 @@
+wiki_dir: input/wikipedia-20230701
+sim_model: all-MiniLM-L6-v2
+max_section_length: 1500
+max_section_num: 30
+max_length: 384
+batch_size: 16
+
+debug: ${debug}
+seed: 7
