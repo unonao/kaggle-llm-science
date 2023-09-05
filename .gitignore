@@ -5,6 +5,7 @@ output/
 preprocessed/
 wandb/
 llm-science-models/
+llm-science-index/
 *.csv
 
 # Byte-compiled / optimized / DLL files

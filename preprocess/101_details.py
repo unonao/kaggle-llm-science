@@ -11,6 +11,7 @@ import re
 import sys
 from pathlib import Path
 
+import blingfire as bf
 import hydra
 import numpy as np
 import pandas as pd
@@ -49,24 +50,41 @@ def extract_sections(title: str, text: str) -> list[tuple[str, str]]:
     return sections
 
 
-def compress_sections(sections: list[tuple[str, str]], max_section_length: int, max_section_num: int) -> list[str]:
+def compress_and_split_sections(
+    sections: list[tuple[str, str]], max_sentence_length: int, max_sentence_num: int, filter_len=3
+) -> list[str]:
     combined_sections = []
+    document = ""
+    for title, content in sections:
+        document += f"{title or 'No Title'}: {content}" + "\n"
+    offset = (0, len(document))
+
+    document_sentences = []
+    try:
+        _, sentence_offsets = bf.text_to_sentences_and_offsets(document)
+        for o in sentence_offsets:
+            if o[1] - o[0] > filter_len:
+                sentence = document[o[0] : o[1]]
+                abs_offsets = (o[0] + offset[0], o[1] + offset[0])
+                document_sentences.append(sentence)
+    except:
+        document_sentences = [document]
+
     buffer = ""
 
-    for title, content in sections:
-        new_section = f"{title or 'No Title'}: {content}"
-        if len(buffer + new_section) <= max_section_length:
-            buffer += new_section + "\n"
+    for text in document_sentences:
+        if len((buffer + text).split(" ")) <= max_sentence_length:
+            buffer += text + "\n"
         else:
             combined_sections.append(buffer.strip())
-            buffer = new_section + "\n"
+            buffer = text + "\n"
 
     if buffer:
         combined_sections.append(buffer.strip())
 
     # 空のセクションをフィルタリング
     sections = [section for section in combined_sections if len(section) > 0]
-    return sections[:max_section_num]
+    return sections[:max_sentence_num]
 
 
 # hydraで設定を読み込む
@@ -103,8 +121,8 @@ def main(c: DictConfig) -> None:
         sections = []
         ids = []
         for i, row in tqdm(df.iterrows(), total=len(df)):
-            secs = compress_sections(
-                extract_sections(row["title"], row["text"]), cfg.max_section_length, cfg.max_section_num
+            secs = compress_and_split_sections(
+                extract_sections(row["title"], row["text"]), cfg.max_sentence_length, cfg.max_sentence_num
             )
             sections += secs
             ids += [row["id"]] * len(secs)

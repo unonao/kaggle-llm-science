@@ -1,0 +1,9 @@
+wiki_dir: input/wikipedia-20230701
+sim_model: all-MiniLM-L6-v2
+max_sentence_length: 300
+max_sentence_num: 100
+max_length: 384
+batch_size: 16
+
+debug: ${debug}
+seed: 7
