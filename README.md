@@ -29,10 +29,15 @@ python exp/004_retrieval_truncate.py exp=004/001
 python exp/005_retrieval.py exp=005/000 
 python exp/005_retrieval.py exp=005/001
 python exp/006_add_valid.py exp=006/000 
+python exp/006_add_valid.py exp=006/000 
+python exp/007_validation.py exp=007/000 
+python exp/007_validation.py exp=007/001
 
 
 python preprocess/000_base.py preprocess=000/000
 python preprocess/001.py preprocess=001/000
+python preprocess/002_gpu.py preprocess=002/000
+python preprocess/100_embedding.py preprocess=100/000 # TODO a.npy はdebugになっている
 ```
 
 ```sh

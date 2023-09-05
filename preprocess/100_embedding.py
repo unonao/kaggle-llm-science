@@ -101,17 +101,16 @@ def main(c: DictConfig) -> None:
 
         # セクションごとに分割し compress_sections で、もとのidと一緒に新たなdfを作成
         sections = []
+        ids = []
         for i, row in tqdm(df.iterrows(), total=len(df)):
-            sections.extend(
-                (
-                    compress_sections(
-                        extract_sections(row["title"], row["text"]), cfg.max_section_length, cfg.max_section_num
-                    ),
-                    row["id"],
-                )
+            secs = compress_sections(
+                extract_sections(row["title"], row["text"]), cfg.max_section_length, cfg.max_section_num
             )
+            sections += secs
+            ids += [row["id"]] * len(secs)
 
-        sections_df = pd.DataFrame(sections, columns=["section_text", "id"])
+        sections_df = pd.DataFrame({"id": ids, "section_text": sections})
+        sections_df.to_parquet(preprocessed_path / f"{Path(path).stem}.parquet")
         print("sections_df.shape:", sections_df.shape)
 
         # 埋め込みを作成
@@ -131,7 +130,6 @@ def main(c: DictConfig) -> None:
         os.makedirs(preprocessed_path, exist_ok=True)
         sections_df.to_parquet(preprocessed_path / f"{Path(path).stem}.parquet")
         np.save(preprocessed_path / f"{Path(path).stem}.npy", section_embeddings)
-
         # メモリ解放
         del df
         del sections_df
