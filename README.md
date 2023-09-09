@@ -9,7 +9,7 @@
 ### 実行
 
 ```sh
-docker compose biuld
+docker compose build
 docker compose run --rm kaggle bash # bash に入る
 docker compose up # jupyter lab 起動
 ```
@@ -33,13 +33,17 @@ python exp/006_add_valid.py exp=006/000
 python exp/007_validation.py exp=007/000 
 python exp/007_validation.py exp=007/001
 python exp/007_validation.py exp=007/002
-
+python exp/007_validation.py exp=007/003
+python exp/007_validation.py exp=007/005
+python exp/007_validation.py exp=007/006
 
 python preprocess/000_base.py preprocess=000/000
 python preprocess/001.py preprocess=001/000
 python preprocess/002_gpu.py preprocess=002/000
+python preprocess/002_gpu.py preprocess=002/002
 python preprocess/100_embedding.py preprocess=100/000 # TODO a.npy はdebugになっている
-python preprocess/101_details.py  preprocess=101/000 
+python preprocess/101_details.py  preprocess=101/000
+python preprocess/102_sentence_details.py  preprocess=101/000
 ```
 
 ```sh
@@ -48,4 +52,5 @@ kaggle datasets version -p llm-science-models/ -m v1.3.0  --dir-mode zip
 
 kaggle datasets init -p llm-science-index
 kaggle datasets create -p llm-science-index --dir-mode zip
+kaggle datasets version -p llm-science-index/ -m v1.1.0  --dir-mode zip
 ```

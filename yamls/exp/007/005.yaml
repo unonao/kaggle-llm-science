@@ -1,0 +1,22 @@
+defaults:
+  - 007/base@_here_
+
+model_name: microsoft/deberta-v3-base
+sep_token : [SEP]
+
+training_args:
+  gradient_accumulation_steps: 1
+  gradient_checkpointing: true
+  per_device_train_batch_size: 4
+  per_device_eval_batch_size: 4
+  optim: adamw_bnb_8bit
+
+max_length: 150 # TODO: 
+
+additional_data_paths: 
+  - preprocessed/002_gpu/003/6000_train_examples.csv
+  - preprocessed/002_gpu/003/extra_train_set.csv
+
+valid_data_paths: 
+  preprocessed/002_gpu/003/train.csv: 200
+  preprocessed/002_gpu/003/6000_wiki_en_sci_questions.csv: 2000
