@@ -43,7 +43,7 @@ python preprocess/002_gpu.py preprocess=002/000
 python preprocess/002_gpu.py preprocess=002/002
 python preprocess/100_embedding.py preprocess=100/000 # TODO a.npy はdebugになっている
 python preprocess/101_details.py  preprocess=101/000
-python preprocess/102_sentence_details.py  preprocess=101/000
+python preprocess/102_sentence_details.py  preprocess=102/000
 ```
 
 ```sh
@@ -61,4 +61,5 @@ pip install .
 cd ..
 python -m wikiextractor.WikiExtractor input/enwiki-20230701-pages-articles-multistream.xml.bz2  --processes 16  --json -b 1G -o input/enwiki-20230701
 python preprocess/200_wiki.py 
+python preprocess/201_embedding.py   preprocess=201/000
 ```

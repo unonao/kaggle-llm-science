@@ -107,7 +107,6 @@ def main(c: DictConfig) -> None:
     # モデル読み込み
     model = SentenceTransformer(cfg.sim_model, device="cuda")
     model.max_seq_length = cfg.max_length
-    model = model.half()
 
     # データ読み込み
     for path in glob.glob(f"{cfg.wiki_dir}/*.parquet"):
