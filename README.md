@@ -60,4 +60,5 @@ cd wikiextractor
 pip install .
 cd ..
 python -m wikiextractor.WikiExtractor input/enwiki-20230701-pages-articles-multistream.xml.bz2  --processes 16  --json -b 1G -o input/enwiki-20230701
+python preprocess/200_wiki.py 
 ```
