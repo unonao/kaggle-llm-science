@@ -107,9 +107,13 @@ def main(c: DictConfig) -> None:
     # モデル読み込み
     model = SentenceTransformer(cfg.sim_model, device="cuda")
     model.max_seq_length = cfg.max_length
+    model.half()
 
     # データ読み込み
     for path in glob.glob(f"{cfg.wiki_dir}/*.parquet"):
+        # 存在するファイルは飛ばす
+        if (preprocessed_path / f"{Path(path).stem}.parquet").exists():
+            continue
         # index は除外
         if "index" in path or "all" in path:
             continue

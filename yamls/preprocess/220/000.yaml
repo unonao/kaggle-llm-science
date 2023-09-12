@@ -1,0 +1,9 @@
+embedding_dir: preprocessed/210_embedding/000
+
+nlist : 100
+n_subquantizer : 64
+n_bits : 8
+
+
+debug: ${debug}
+seed: 7

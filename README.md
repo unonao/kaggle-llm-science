@@ -53,6 +53,10 @@ kaggle datasets version -p llm-science-models/ -m v1.4.0  --dir-mode zip
 kaggle datasets init -p llm-science-index
 kaggle datasets create -p llm-science-index --dir-mode zip
 kaggle datasets version -p llm-science-index/ -m v1.1.0  --dir-mode zip
+
+
+kaggle datasets create -p llm-science-wikipedia --dir-mode zip
+kaggle datasets version -p llm-science-wikipedia  -m v1.0.0 
 ```
 
 ```sh
@@ -61,5 +65,7 @@ pip install .
 cd ..
 python -m wikiextractor.WikiExtractor input/enwiki-20230701-pages-articles-multistream.xml.bz2  --processes 16  --json -b 1G -o input/enwiki-20230701
 python preprocess/200_wiki.py 
-python preprocess/201_embedding.py   preprocess=201/000
+python preprocess/210_embedding.py  preprocess=210/000 debug=True
+python preprocess/220_doc_index.py preprocess=220/000 
+
 ```

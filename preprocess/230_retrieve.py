@@ -57,20 +57,6 @@ def sentencize(
     for document, document_id, offset in tqdm(
         zip(documents, document_ids, offsets), total=len(documents), disable=disable_progress_bar
     ):
-        # 不要と思われる部分は削除する
-        document = document.split("==See also==")[0]
-        document = document.split("== See also ==")[0]
-        document = document.split("==References==")[0]
-        document = document.split("== References ==")[0]
-        document = document.split("==Further reading==")[0]
-        document = document.split("== Further reading ==")[0]
-        document = document.split("==External links==")[0]
-        document = document.split("== External links ==")[0]
-
-        # 見出し部分を : に置換
-        pattern = r"={2,}\s?(.*?)\s?={2,}"
-        document = re.sub(pattern, r"\1 :", document)
-
         try:
             _, sentence_offsets = bf.text_to_sentences_and_offsets(document)
             for o in sentence_offsets:
@@ -159,7 +145,7 @@ def relevant_title_retrieval(
     sentence_index = faiss.index_cpu_to_gpu(res, 0, sentence_index, co)
     sentence_index.nprobe = 10
     prompt_embeddings = model.encode(
-        df.prompt.values,
+        df.prompt_answer_stem.values,
         batch_size=batch_size,
         device="cuda",
         show_progress_bar=True,
@@ -276,6 +262,8 @@ def main(c: DictConfig) -> None:
         if cfg.debug:
             df = df.head()
         print(f"{path}:{df.shape}")
+        df["answer_all"] = df.apply(lambda x: " ".join([x["A"], x["B"], x["C"], x["D"], x["E"]]), axis=1)
+        df["prompt_answer_stem"] = df["prompt"] + " " + df["answer_all"]
 
         # title 検索
         print("【title 検索】")
@@ -325,8 +313,6 @@ def main(c: DictConfig) -> None:
 
         ## Combine all answers
         print("【Combine all answers】")
-        df["answer_all"] = df.apply(lambda x: " ".join([x["A"], x["B"], x["C"], x["D"], x["E"]]), axis=1)
-        df["prompt_answer_stem"] = df["prompt"] + " " + df["answer_all"]
         question_embeddings = model.encode(
             df.prompt_answer_stem.values,
             batch_size=cfg.batch_size,

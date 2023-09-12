@@ -1,4 +1,4 @@
-wiki_dir: llm-science-wikipedia
+wiki_dir: input/llm-science-wikipedia-data
 sim_model: BAAI/bge-small-en # all-MiniLM-L6-v2
 max_sentence_length: 250
 max_sentence_num: 300

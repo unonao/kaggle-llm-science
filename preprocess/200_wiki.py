@@ -76,7 +76,7 @@ def main():
     print("save all")
     # text を drop
     df = df.drop("text", axis=1)
-    df.to_parquet(f"{save_dir}/wiki_all_index.parquet")
+    df.to_parquet(f"{save_dir}/wiki-all-index.parquet")
     gc.collect()
 
 
