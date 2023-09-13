@@ -1,5 +1,5 @@
 """
-input/enwiki-20230701/ 以下のファイルを全て読み取って結合し、
+input/enwiki-20230911-cirrus 以下のファイルを全て読み取って結合し、
 先頭１文字目から file 名として a.parquet,...z.parquet, number.parquet, other.parquet を決定
 全体に保存後、それぞれのファイルに分割して保存する
 """
@@ -14,8 +14,8 @@ import pandas as pd
 from tqdm.auto import tqdm
 
 debug = False
-input_dir = Path("input/enwiki-20230701/AA")
-save_dir = "input/llm-science-wikipedia-data"
+input_dir = Path("input/enwiki-20230911-cirrus/AA")
+save_dir = "input/llm-science-wikipedia-cirrus"
 
 
 def get_first_char(text):

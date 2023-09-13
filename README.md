@@ -52,7 +52,7 @@ kaggle datasets version -p llm-science-models/ -m v1.4.0  --dir-mode zip
 
 kaggle datasets init -p llm-science-index
 kaggle datasets create -p llm-science-index --dir-mode zip
-kaggle datasets version -p llm-science-index/ -m v1.1.0  --dir-mode zip
+kaggle datasets version -p llm-science-index/ -m v1.２.0  --dir-mode zip
 
 
 kaggle datasets create -p llm-science-wikipedia --dir-mode zip
@@ -75,4 +75,5 @@ cd wikiextractor
 pip install .
 cd ..
 python -m wikiextractor.cirrus-extract input/enwiki-20230911-cirrussearch-content.json.gz  -b 1G -o input/enwiki-20230911-cirrus
+python preprocess/201_wiki.py 
 ```

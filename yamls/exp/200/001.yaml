@@ -5,11 +5,13 @@ defaults:
 model_name: microsoft/deberta-v3-large
 sep_token : [SEP]
 
+early_stopping_patience: 3
+
 training_args:
-  gradient_accumulation_steps: 4
+  gradient_accumulation_steps: 2
   gradient_checkpointing: true
-  per_device_train_batch_size: 1
-  per_device_eval_batch_size: 1
+  per_device_train_batch_size: 2
+  per_device_eval_batch_size: 2
   optim: adamw_bnb_8bit
 
 max_length: 200 # 200: 211h # 400: 450h
