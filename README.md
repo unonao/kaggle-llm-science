@@ -48,7 +48,7 @@ python preprocess/102_sentence_details.py  preprocess=102/000
 
 ```sh
 kaggle datasets create -p llm-science-models --dir-mode zip
-kaggle datasets version -p llm-science-models/ -m v1.4.0  --dir-mode zip
+kaggle datasets version -p llm-science-models/ -m v1.5.0  --dir-mode zip
 
 kaggle datasets init -p llm-science-index
 kaggle datasets create -p llm-science-index --dir-mode zip
