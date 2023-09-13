@@ -67,5 +67,12 @@ python -m wikiextractor.WikiExtractor input/enwiki-20230701-pages-articles-multi
 python preprocess/200_wiki.py 
 python preprocess/210_embedding.py  preprocess=210/000 debug=True
 python preprocess/220_doc_index.py preprocess=220/000 
+python preprocess/231_retrieve.py preprocess=230/000  # 前処理追加したので注意
+python exp/200_new.py exp=200/000 
+python exp/200_new.py exp=200/001
 
+cd wikiextractor
+pip install .
+cd ..
+python -m wikiextractor.cirrus-extract input/enwiki-20230911-cirrussearch-content.json.gz  -b 1G -o input/enwiki-20230911-cirrus
 ```

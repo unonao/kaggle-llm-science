@@ -33,6 +33,29 @@ sys.path.append(os.pardir)
 import utils
 
 
+def split_paragraph(paragraph: str, max_paragraph_length: int = 100) -> list[str]:
+    # paragraphをちょうどよい単位に分割する
+
+    _, sentence_offsets = bf.text_to_sentences_and_offsets(paragraph)
+    buffer = ""
+    paragraphs = []
+    for o in sentence_offsets:
+        sentence = paragraph[o[0] : o[1]]
+
+        if len((buffer + sentence).split(" ")) <= max_paragraph_length:
+            buffer += sentence + " "
+        else:
+            paragraphs.append(buffer.strip())
+            buffer = sentence + " "
+
+    if buffer:
+        paragraphs.append(buffer.strip())
+
+    # 空のセクションをフィルタリング
+    chunks = [chunk for chunk in paragraphs if len(chunk) > 0]
+    return chunks
+
+
 def sentencize(
     documents: Iterable[str],
     document_ids: Iterable,
@@ -71,6 +94,9 @@ def sentencize(
         pattern = re.compile(r"#{2,}\s?(.*?)\s?#{2,}(\n)*")
         document = pattern.sub(r" \1 : ", document)
 
+        # formula_1, formula_11 などを変換
+        document = re.sub(r"formula_\d+", "Formula", document)
+
         document = document.replace("&lt;templatestyles src=Unsolved/styles.css /&gt;", "")
         document = document.replace("&lt;templatestyles src=Template:Blockquote/styles.css /&gt;", "")
         document = document.replace("&lt;templatestyles src=Reflist/styles.css /&gt;", "")
@@ -85,16 +111,17 @@ def sentencize(
         # document = document.replace("\n", "")
 
         try:
-            for sentence in document.split("\n"):
-                if len(sentence) > filter_len:
-                    row = {}
-                    row["document_id"] = document_id
-                    row["text"] = sentence
-                    # <next> を空白に置換
-                    # row["text"] = row["text"].replace("<next>", " ")
-                    # row["text"] = row["text"].replace("\n", " ")
-                    row["offset"] = (0, 0)
-                    document_sentences.append(row)
+            for paragraph in document.split("\n"):
+                for sentence in split_paragraph(paragraph):
+                    if len(sentence) > filter_len:
+                        row = {}
+                        row["document_id"] = document_id
+                        row["text"] = sentence
+                        # <next> を空白に置換
+                        # row["text"] = row["text"].replace("<next>", " ")
+                        # row["text"] = row["text"].replace("\n", " ")
+                        row["offset"] = (0, 0)
+                        document_sentences.append(row)
             """
             _, sentence_offsets = bf.text_to_sentences_and_offsets(document)
             for o in sentence_offsets:
@@ -274,7 +301,7 @@ def extract_contexts_from_matching_pairs(
             ## Get the top matches
             ss, ii = prompt_index.search(question_embeddings, num_sentences_include)
             for _s, _i in zip(ss[prompt_id], ii[prompt_id]):
-                context += str(_s) + ":" + processed_wiki_text_data.loc[prompt_indices]["text"].iloc[_i] + " "
+                context += processed_wiki_text_data.loc[prompt_indices]["text"].iloc[_i] + " "
         contexts.append(context)
     return contexts
 
