@@ -34,13 +34,15 @@ Each file will contain several documents in the format:
 
 """
 
-import sys, os.path, time
-import re
-import json
 import argparse
 import bz2
 import gzip
+import json
 import logging
+import os.path
+import re
+import sys
+import time
 
 # Program version
 version = "3.0"
@@ -131,7 +133,7 @@ def process_dump(input_file, out_file, file_size, file_compress):
     if input_file == "-":
         input = sys.stdin
     else:
-        input = gzip.open(input_file, encoding="utf-8")
+        input = gzip.open(input_file)
 
     if out_file == "-":
         output = sys.stdout
