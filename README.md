@@ -14,36 +14,45 @@ docker compose run --rm kaggle bash # bash に入る
 docker compose up # jupyter lab 起動
 ```
 
+### データセット
+
+wikipedia
+
 ```sh
-python exp/001_additional_data.py exp=001/000 debug=true
-python exp/001_additional_data.py exp=001/001
-python exp/001_additional_data.py exp=001/002
-python exp/001_additional_data.py exp=001/003
-python exp/001_additional_data.py exp=001/004
-python exp/002_additional_datas.py exp=002/000
-python exp/002_additional_datas.py exp=002/001
-python exp/002_additional_datas.py exp=002/002
-python exp/003_retrieval.py exp=003/000 
-python exp/004_retrieval_truncate.py exp=004/000
-python exp/004_retrieval_truncate.py exp=004/001
-python exp/005_retrieval.py exp=005/000 
-python exp/005_retrieval.py exp=005/001
-python exp/006_add_valid.py exp=006/000 
-python exp/006_add_valid.py exp=006/000 
-python exp/007_validation.py exp=007/000 
-python exp/007_validation.py exp=007/001
-python exp/007_validation.py exp=007/002
-python exp/007_validation.py exp=007/003
-python exp/007_validation.py exp=007/005
+# please download enwiki-20230701-pages-articles-multistream.xml.bz2  
+cd wikiextractor
+pip install .
+cd ..
+python -m wikiextractor.WikiExtractor input/enwiki-20230701-pages-articles-multistream.xml.bz2  --processes 8  --json -b 1G -o input/enwiki-20230701
+python preprocess/300_wiki_data_a.py
+
+# download https://dumps.wikimedia.org/other/cirrussearch/current/enwiki-20230911-cirrussearch-content.json.gz
+cd wikiextractor
+pip install .
+cd ..
+python -m wikiextractor.cirrus-extract input/enwiki-20230911-cirrussearch-content.json.gz  -b 1G -o input/enwiki-20230911-cirrus
+python preprocess/301_wiki_data_b.py
+preprocess/311_embedding_b.py preprocess=311/000 
+```
+
+prompt
+
+```sh
+python preprocess/900_concat.py # 公開データの結合、fold分割
+```
+
+### その他
+
+```sh
 python exp/007_validation.py exp=007/006
 
-python preprocess/000_base.py preprocess=000/000
-python preprocess/001.py preprocess=001/000
-python preprocess/002_gpu.py preprocess=002/000
-python preprocess/002_gpu.py preprocess=002/002
-python preprocess/100_embedding.py preprocess=100/000 # TODO a.npy はdebugになっている
-python preprocess/101_details.py  preprocess=101/000
-python preprocess/102_sentence_details.py  preprocess=102/000
+# bullt 対処前のwikidump
+python preprocess/200_wiki.py 
+python preprocess/210_embedding.py  preprocess=210/000 debug=True
+python preprocess/220_doc_index.py preprocess=220/000 
+python preprocess/231_retrieve.py preprocess=230/000  # 前処理追加したので注意
+python exp/200_new.py exp=200/000 
+python exp/200_new.py exp=200/001
 ```
 
 ```sh
@@ -54,26 +63,6 @@ kaggle datasets init -p llm-science-index
 kaggle datasets create -p llm-science-index --dir-mode zip
 kaggle datasets version -p llm-science-index/ -m v1.２.0  --dir-mode zip
 
-
 kaggle datasets create -p llm-science-wikipedia --dir-mode zip
 kaggle datasets version -p llm-science-wikipedia  -m v1.0.0 
-```
-
-```sh
-cd wikiextractor
-pip install .
-cd ..
-python -m wikiextractor.WikiExtractor input/enwiki-20230701-pages-articles-multistream.xml.bz2  --processes 16  --json -b 1G -o input/enwiki-20230701
-python preprocess/200_wiki.py 
-python preprocess/210_embedding.py  preprocess=210/000 debug=True
-python preprocess/220_doc_index.py preprocess=220/000 
-python preprocess/231_retrieve.py preprocess=230/000  # 前処理追加したので注意
-python exp/200_new.py exp=200/000 
-python exp/200_new.py exp=200/001
-
-cd wikiextractor
-pip install .
-cd ..
-python -m wikiextractor.cirrus-extract input/enwiki-20230911-cirrussearch-content.json.gz  -b 1G -o input/enwiki-20230911-cirrus
-python preprocess/201_wiki.py 
 ```
