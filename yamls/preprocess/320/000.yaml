@@ -1,4 +1,4 @@
-embedding_dir: preprocessed/311_embedding_b/000
+embedding_dir: preprocessed/310_embedding_a/000
 
 nlist : 100
 n_subquantizer : 64

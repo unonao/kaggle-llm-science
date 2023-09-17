@@ -24,7 +24,9 @@ cd wikiextractor
 pip install .
 cd ..
 python -m wikiextractor.WikiExtractor input/enwiki-20230701-pages-articles-multistream.xml.bz2  --processes 8  --json -b 1G -o input/enwiki-20230701
-python preprocess/300_wiki_data_a.py
+python preprocess/300_wiki_data_a.py 
+python preprocess/310_embedding_a.py preprocess=310/000 
+
 
 # download https://dumps.wikimedia.org/other/cirrussearch/current/enwiki-20230911-cirrussearch-content.json.gz
 cd wikiextractor
@@ -32,7 +34,7 @@ pip install .
 cd ..
 python -m wikiextractor.cirrus-extract input/enwiki-20230911-cirrussearch-content.json.gz  -b 1G -o input/enwiki-20230911-cirrus
 python preprocess/301_wiki_data_b.py
-preprocess/311_embedding_b.py preprocess=311/000 
+python preprocess/311_embedding_b.py preprocess=311/000 
 ```
 
 prompt
@@ -56,6 +58,10 @@ python exp/200_new.py exp=200/001
 ```
 
 ```sh
+python preprocess/330_retrieve_a.py preprocess=330/000  debug=True
+```
+
+```sh
 kaggle datasets create -p llm-science-models --dir-mode zip
 kaggle datasets version -p llm-science-models/ -m v1.5.0  --dir-mode zip
 
@@ -65,4 +71,14 @@ kaggle datasets version -p llm-science-index/ -m v1.２.0  --dir-mode zip
 
 kaggle datasets create -p llm-science-wikipedia --dir-mode zip
 kaggle datasets version -p llm-science-wikipedia  -m v1.0.0 
+
+
+kaggle datasets init -p llm-science-wikipedia-data-a
+zip -r  llm-science-wikipedia-data-a/data.zip input/llm-science-wikipedia-data-a
+kaggle datasets create -p llm-science-wikipedia-data-a --dir-mode zip
+
+kaggle datasets init -p llm-science-wikipedia-data-b
+zip -r  llm-science-wikipedia-data-b/data.zip input/llm-science-wikipedia-data-b
+kaggle datasets create -p llm-science-wikipedia-data-b --dir-mode zip
+
 ```
