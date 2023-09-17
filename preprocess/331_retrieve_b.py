@@ -98,23 +98,22 @@ def sentencize(
         zip(titles, documents, document_ids), total=len(documents), disable=disable_progress_bar
     ):
         try:
-            for header, text in extract_sections(document):  # セクション(見出し区切り)ごとに分割
-                # chunk にまとめる
-                ## 念のため改行をスペースに変換
-                text = text.replace("\n", " ")
-                _, sentence_offsets = bf.text_to_sentences_and_offsets(text)
-                section_sentences = []
-                for o in sentence_offsets:
-                    if o[1] - o[0] > filter_len:
-                        section_sentences.append(text[o[0] : o[1]])
-                chunks = extract_chunk_by_sliding_window(section_sentences, window_size, sliding_size)
+            # chunk にまとめる
+            ## 念のため改行をスペースに変換
+            document = document.replace("\n", " ")
+            _, sentence_offsets = bf.text_to_sentences_and_offsets(document)
+            section_sentences = []
+            for o in sentence_offsets:
+                if o[1] - o[0] > filter_len:
+                    section_sentences.append(document[o[0] : o[1]])
+            chunks = extract_chunk_by_sliding_window(section_sentences, window_size, sliding_size)
 
-                for chunk in chunks:
-                    row = {}
-                    row["document_id"] = document_id
-                    row["text"] = f"{title} > {header} > {chunk}"
-                    row["offset"] = (0, 0)
-                    document_sentences.append(row)
+            for chunk in chunks:
+                row = {}
+                row["document_id"] = document_id
+                row["text"] = f"{title} > {chunk}"
+                row["offset"] = (0, 0)
+                document_sentences.append(row)
         except:
             continue
     return pd.DataFrame(document_sentences)
@@ -251,16 +250,16 @@ def extract_contexts_from_matching_pairs(
         assert prompt_indices.shape[0] > 0
         prompt_index = faiss.index_factory(wiki_data_embeddings.shape[1], "Flat")
         prompt_index.add(wiki_data_embeddings[prompt_indices])
-        ## Get the top matches
-        ss, ii = prompt_index.search(question_embeddings[np.newaxis, prompt_id], num_sentences_include)
         context = ""
-        for _s, _i in zip(ss[0], ii[0]):
+        ## Get the top matches
+        ss, ii = prompt_index.search(question_embeddings, num_sentences_include)
+        for _s, _i in zip(ss[prompt_id], ii[prompt_id]):
             context += processed_wiki_text_data.loc[prompt_indices]["text"].iloc[_i] + " "
         results["contexts"].append(context)
-        results["sim_max"].append(ss[0].max())
-        results["sim_min"].append(ss[0].min())
-        results["sim_mean"].append(ss[0].mean())
-        results["sim_std"].append(ss[0].std())
+        results["sim_max"].append(ss[prompt_id].max())
+        results["sim_min"].append(ss[prompt_id].min())
+        results["sim_mean"].append(ss[prompt_id].mean())
+        results["sim_std"].append(ss[prompt_id].std())
 
     return results
 

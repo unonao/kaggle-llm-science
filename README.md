@@ -25,8 +25,9 @@ pip install .
 cd ..
 python -m wikiextractor.WikiExtractor input/enwiki-20230701-pages-articles-multistream.xml.bz2  --processes 8  --json -b 1G -o input/enwiki-20230701
 python preprocess/300_wiki_data_a.py 
+## yet
 python preprocess/310_embedding_a.py preprocess=310/000 
-
+preprocess/320_doc_index.py preprocess=320/000
 
 # download https://dumps.wikimedia.org/other/cirrussearch/current/enwiki-20230911-cirrussearch-content.json.gz
 cd wikiextractor
@@ -34,7 +35,9 @@ pip install .
 cd ..
 python -m wikiextractor.cirrus-extract input/enwiki-20230911-cirrussearch-content.json.gz  -b 1G -o input/enwiki-20230911-cirrus
 python preprocess/301_wiki_data_b.py
-python preprocess/311_embedding_b.py preprocess=311/000 
+python preprocess/311_embedding_b.py preprocess=311/000
+python preprocess/320_doc_index.py preprocess=320/001
+python preprocess/331_retrieve_b.py preprocess=331/000 debug=True
 ```
 
 prompt
@@ -58,7 +61,8 @@ python exp/200_new.py exp=200/001
 ```
 
 ```sh
-python preprocess/330_retrieve_a.py preprocess=330/000  debug=True
+python preprocess/330_retrieve_a.py preprocess=330/000 debug=True
+python preprocess/331_retrieve_b.py preprocess=331/000 debug=True
 ```
 
 ```sh

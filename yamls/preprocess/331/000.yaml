@@ -3,9 +3,9 @@ data_paths:
   - preprocessed/901_concat/data1.csv
   - preprocessed/901_concat/data2.csv
 
-wiki_dir: input/llm-science-wikipedia-data # オリジナル抽出データ
-wiki_index_path: preprocessed/220_doc_index/000/all.parquet
-index_path: preprocessed/220_doc_index/000/ivfpq_index.faiss
+wiki_dir: input/llm-science-wikipedia-data-b 
+wiki_index_path: preprocessed/320_doc_index/001/all.parquet # b
+index_path: preprocessed/320_doc_index/001/ivfpq_index.faiss
 sim_model: BAAI/bge-small-en
 max_length: 384
 batch_size: 8
