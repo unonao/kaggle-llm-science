@@ -95,9 +95,9 @@ def main(c: DictConfig) -> None:
     df_valid = pd.read_csv(cfg.data1_path).reset_index(drop=True)
     df_valid2 = pd.read_csv(cfg.data2_path).reset_index(drop=True)
     if cfg.debug:
-        df_train = df_train.head()
-        df_valid = df_valid.head()
-        df_valid2 = df_valid2.head()
+        df_train = df_train.head(10)
+        # df_valid = df_valid.head(10)
+        # df_valid2 = df_valid2.head(10)
     print(f"train:{df_train.shape}, valid:{df_valid.shape}, valid2:{df_valid2.shape}")
 
     def preprocess_df(df, mode="train"):
@@ -193,6 +193,10 @@ def main(c: DictConfig) -> None:
         # valid を確認
         valid_pred = trainer.predict(tokenized_dataset_valid).predictions
         valid2_pred = trainer.predict(tokenized_dataset_valid2).predictions
+        # torch softmaxをかける
+        valid_pred = torch.softmax(torch.tensor(valid_pred), dim=1).numpy()
+        valid2_pred = torch.softmax(torch.tensor(valid2_pred), dim=1).numpy()
+
         result_dict = {
             "data1_map@3": map_k(df_valid["answer"].to_numpy(), predictions_to_map_output(valid_pred)),
             "data2_map@3": map_k(df_valid2["answer"].to_numpy(), predictions_to_map_output(valid2_pred)),

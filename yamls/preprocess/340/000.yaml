@@ -1,7 +1,7 @@
 data:
   data1:
     base_path: preprocessed/331_retrieve_b/000/data1.csv
-    pred_path: output/300_1st/001/data1_pred.csv
+    pred_path: output/300_1st/000/data1_pred.npy
   data2:
     base_path: preprocessed/331_retrieve_b/000/data2.csv
-    pred_path: output/300_1st/001/data2_pred.csv
+    pred_path: output/300_1st/000/data2_pred.npy

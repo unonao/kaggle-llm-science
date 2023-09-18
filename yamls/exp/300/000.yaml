@@ -7,11 +7,12 @@ sep_token : [SEP]
 early_stopping_patience: 4
 
 training_args:
-  gradient_accumulation_steps: 1
+  gradient_accumulation_steps: 2
   gradient_checkpointing: true
-  per_device_train_batch_size: 4
-  per_device_eval_batch_size: 4
+  per_device_train_batch_size: 2
+  per_device_eval_batch_size: 2
   optim: adamw_bnb_8bit
+  num_train_epochs: 30
 
 max_length: 150
 max_length_valid: 300

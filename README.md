@@ -60,12 +60,22 @@ python exp/200_new.py exp=200/000
 python exp/200_new.py exp=200/001
 ```
 
+1st
+
 ```sh
 python preprocess/330_retrieve_a.py preprocess=330/000 debug=True
 
 python preprocess/331_retrieve_b.py preprocess=331/000 debug=True
 python exp/300_1st.py exp=300/000 debug=True
 ```
+
+2nd
+
+```sh
+ python preprocess/340_2nd_data.py preprocess=340/000
+```
+
+kaggle dataset
 
 ```sh
 kaggle datasets init -p llm-science-wikipedia-data-a
@@ -85,7 +95,5 @@ kaggle datasets version -p llm-science-index/ -m v1.3.0  --dir-mode zip
 
 kaggle datasets create -p llm-science-wikipedia --dir-mode zip
 kaggle datasets version -p llm-science-wikipedia  -m v1.0.0 
-
-
 
 ```
