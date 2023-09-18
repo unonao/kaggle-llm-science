@@ -16,6 +16,12 @@ docker compose up # jupyter lab 起動
 
 ### データセット
 
+prompt
+
+```sh
+python preprocess/901_concat_no_wikibase.py 
+```
+
 wikipedia
 
 ```sh
@@ -29,6 +35,7 @@ python preprocess/300_wiki_data_a.py
 python preprocess/310_embedding_a.py preprocess=310/000 
 preprocess/320_doc_index.py preprocess=320/000
 
+
 # download https://dumps.wikimedia.org/other/cirrussearch/current/enwiki-20230911-cirrussearch-content.json.gz
 cd wikiextractor
 pip install .
@@ -37,13 +44,6 @@ python -m wikiextractor.cirrus-extract input/enwiki-20230911-cirrussearch-conten
 python preprocess/301_wiki_data_b.py
 python preprocess/311_embedding_b.py preprocess=311/000
 python preprocess/320_doc_index.py preprocess=320/001
-python preprocess/331_retrieve_b.py preprocess=331/000 debug=True
-```
-
-prompt
-
-```sh
-python preprocess/900_concat.py # 公開データの結合、fold分割
 ```
 
 ### その他
@@ -62,21 +62,12 @@ python exp/200_new.py exp=200/001
 
 ```sh
 python preprocess/330_retrieve_a.py preprocess=330/000 debug=True
+
 python preprocess/331_retrieve_b.py preprocess=331/000 debug=True
+python exp/300_1st.py exp=300/000 debug=True
 ```
 
 ```sh
-kaggle datasets create -p llm-science-models --dir-mode zip
-kaggle datasets version -p llm-science-models/ -m v1.5.0  --dir-mode zip
-
-kaggle datasets init -p llm-science-index
-kaggle datasets create -p llm-science-index --dir-mode zip
-kaggle datasets version -p llm-science-index/ -m v1.２.0  --dir-mode zip
-
-kaggle datasets create -p llm-science-wikipedia --dir-mode zip
-kaggle datasets version -p llm-science-wikipedia  -m v1.0.0 
-
-
 kaggle datasets init -p llm-science-wikipedia-data-a
 zip -r  llm-science-wikipedia-data-a/data.zip input/llm-science-wikipedia-data-a
 kaggle datasets create -p llm-science-wikipedia-data-a --dir-mode zip
@@ -84,5 +75,17 @@ kaggle datasets create -p llm-science-wikipedia-data-a --dir-mode zip
 kaggle datasets init -p llm-science-wikipedia-data-b
 zip -r  llm-science-wikipedia-data-b/data.zip input/llm-science-wikipedia-data-b
 kaggle datasets create -p llm-science-wikipedia-data-b --dir-mode zip
+
+kaggle datasets create -p llm-science-models --dir-mode zip
+kaggle datasets version -p llm-science-models/ -m v1.6.0  --dir-mode zip
+
+kaggle datasets init -p llm-science-index
+kaggle datasets create -p llm-science-index --dir-mode zip
+kaggle datasets version -p llm-science-index/ -m v1.3.0  --dir-mode zip
+
+kaggle datasets create -p llm-science-wikipedia --dir-mode zip
+kaggle datasets version -p llm-science-wikipedia  -m v1.0.0 
+
+
 
 ```

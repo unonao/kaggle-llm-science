@@ -26,7 +26,7 @@ non_wiki_base_paths = [
     "input/40k-data-with-context-v2/ScienceQA_with_context2.csv",
 ]
 non_wiki_base_df = pd.concat([pd.read_csv(path) for path in non_wiki_base_paths])
-
+print("non_wiki_base_df: ", non_wiki_base_df.shape)
 
 # wikipedia がベースとなるデータ
 wiki_base_paths = [
@@ -43,7 +43,7 @@ train_path = "input/kaggle-llm-science-exam/train.csv"
 enwiki_path = "input/sci-or-not-sci-hypthesis-testing-pack/6000_wiki_en_sci_questions.csv"
 
 
-enwiki_df = pd.read_csv(enwiki_path, index_col=0)
+enwiki_df = pd.read_csv(enwiki_path)
 wiki_base_df = pd.concat([pd.read_csv(path) for path in wiki_base_paths] + [enwiki_df.iloc[1000:]]).reset_index(
     drop=True
 )
@@ -70,6 +70,8 @@ df2 = df2[use_cols].fillna("")
 print(df0.shape, df1.shape, df2.shape)
 
 # 保存
-df0.to_csv(os.path.join(save_dir, "data0.csv"), index=False)
+## 10000件ごとに分割して保存
+for i in range(0, len(df0), 10000):
+    df0.iloc[i : i + 10000].to_csv(os.path.join(save_dir, f"data0_{i}.csv"), index=False)
 df1.to_csv(os.path.join(save_dir, "data1.csv"), index=False)
 df2.to_csv(os.path.join(save_dir, "data2.csv"), index=False)

@@ -79,6 +79,7 @@ def sentencize(
     window_size: int = 3,
     sliding_size: int = 2,
     filter_len: int = 5,
+    filter_len_max: int = 500,
     disable_progress_bar: bool = False,
 ) -> pd.DataFrame:
     """
@@ -105,7 +106,7 @@ def sentencize(
                 _, sentence_offsets = bf.text_to_sentences_and_offsets(text)
                 section_sentences = []
                 for o in sentence_offsets:
-                    if o[1] - o[0] > filter_len:
+                    if filter_len < o[1] - o[0] and o[1] - o[0] < filter_len_max:
                         section_sentences.append(text[o[0] : o[1]])
                 chunks = extract_chunk_by_sliding_window(section_sentences, window_size, sliding_size)
 
@@ -254,13 +255,21 @@ def extract_contexts_from_matching_pairs(
         ## Get the top matches
         ss, ii = prompt_index.search(question_embeddings[np.newaxis, prompt_id], num_sentences_include)
         context = ""
+        total_len = 0
+        num = 0
         for _s, _i in zip(ss[0], ii[0]):
-            context += processed_wiki_text_data.loc[prompt_indices]["text"].iloc[_i] + " "
+            if total_len > 1000 or _s >= 1.0:
+                break
+            text = processed_wiki_text_data.loc[prompt_indices]["text"].iloc[_i]
+            context += text + " "
+            total_len += len(text.split(" "))
+            num += 1
         results["contexts"].append(context)
-        results["sim_max"].append(ss[0].max())
-        results["sim_min"].append(ss[0].min())
-        results["sim_mean"].append(ss[0].mean())
-        results["sim_std"].append(ss[0].std())
+        results["sim_max"].append(ss[0][:num].max())
+        results["sim_min"].append(ss[0][:num].min())
+        results["sim_mean"].append(ss[0][:num].mean())
+        results["sim_std"].append(ss[0][:num].std())
+        results["sim_num"].append(num)
 
     return results
 
@@ -285,7 +294,7 @@ def main(c: DictConfig) -> None:
 
     for path in cfg.data_paths:
         # データ読み込み
-        df = pd.read_csv(path)
+        df = pd.read_csv(path).fillna("")
 
         df.reset_index(inplace=True, drop=True)
         if cfg.debug:
@@ -334,6 +343,8 @@ def main(c: DictConfig) -> None:
             cfg.sliding_size,
         )
         print(processed_wiki_text_data.head())
+        del wiki_text_data  # 追加
+        _ = gc.collect()
 
         ## Get embeddings of the wiki text data
         print("【Get embeddings of the wiki text data】")
@@ -380,6 +391,7 @@ def main(c: DictConfig) -> None:
         df["sim_min"] = results["sim_min"]
         df["sim_mean"] = results["sim_mean"]
         df["sim_std"] = results["sim_std"]
+        df["sim_num"] = results["sim_num"]
 
         # 保存
         print("【保存】")

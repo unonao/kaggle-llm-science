@@ -368,7 +368,8 @@ def main(c: DictConfig) -> None:
         ## Parse documents into sentences
         print("【Parse documents into sentences】")
         processed_wiki_text_data = process_documents(wiki_text_data.text.values, wiki_text_data.id.values)
-        print(processed_wiki_text_data.head())
+        print(processed_wiki_text_data.tail())
+        print("processed_wiki_text_data size(GB):", sys.getsizeof(processed_wiki_text_data) / 1024**3)
 
         ## Get embeddings of the wiki text data
         print("【Get embeddings of the wiki text data】")
@@ -382,6 +383,7 @@ def main(c: DictConfig) -> None:
         )  # .half()
         # wiki_data_embeddings = wiki_data_embeddings.detach().cpu().numpy()
         wiki_data_embeddings = wiki_data_embeddings.astype(np.float32)
+        print("wiki_data_embeddings size(GB):", sys.getsizeof(wiki_data_embeddings) / 1024**3)
         _ = gc.collect()
         torch.cuda.empty_cache()
 

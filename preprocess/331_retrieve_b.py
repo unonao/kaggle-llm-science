@@ -79,6 +79,7 @@ def sentencize(
     window_size: int = 3,
     sliding_size: int = 2,
     filter_len: int = 5,
+    filter_len_max: int = 500,
     disable_progress_bar: bool = False,
 ) -> pd.DataFrame:
     """
@@ -104,7 +105,7 @@ def sentencize(
             _, sentence_offsets = bf.text_to_sentences_and_offsets(document)
             section_sentences = []
             for o in sentence_offsets:
-                if o[1] - o[0] > filter_len:
+                if filter_len < o[1] - o[0] and o[1] - o[0] < filter_len_max:
                     section_sentences.append(document[o[0] : o[1]])
             chunks = extract_chunk_by_sliding_window(section_sentences, window_size, sliding_size)
 
@@ -239,7 +240,7 @@ def extract_contexts_from_matching_pairs(
     question_embeddings: np.ndarray,
     num_sentences_include: int = 5,
 ):
-    results = {"contexts": [], "sim_min": [], "sim_max": [], "sim_mean": [], "sim_std": []}
+    results = {"contexts": [], "sim_min": [], "sim_max": [], "sim_mean": [], "sim_std": [], "sim_num": []}
     for r in tqdm(df.itertuples(), total=len(df)):
         prompt_id = r.Index
         prompt_indices = processed_wiki_text_data[
@@ -250,16 +251,24 @@ def extract_contexts_from_matching_pairs(
         assert prompt_indices.shape[0] > 0
         prompt_index = faiss.index_factory(wiki_data_embeddings.shape[1], "Flat")
         prompt_index.add(wiki_data_embeddings[prompt_indices])
-        context = ""
         ## Get the top matches
-        ss, ii = prompt_index.search(question_embeddings, num_sentences_include)
-        for _s, _i in zip(ss[prompt_id], ii[prompt_id]):
-            context += processed_wiki_text_data.loc[prompt_indices]["text"].iloc[_i] + " "
+        ss, ii = prompt_index.search(question_embeddings[np.newaxis, prompt_id], num_sentences_include)
+        context = ""
+        total_len = 0
+        num = 0
+        for _s, _i in zip(ss[0], ii[0]):
+            if total_len > 1000 or _s >= 1.0:
+                break
+            text = processed_wiki_text_data.loc[prompt_indices]["text"].iloc[_i]
+            context += text + " "
+            total_len += len(text.split(" "))
+            num += 1
         results["contexts"].append(context)
-        results["sim_max"].append(ss[prompt_id].max())
-        results["sim_min"].append(ss[prompt_id].min())
-        results["sim_mean"].append(ss[prompt_id].mean())
-        results["sim_std"].append(ss[prompt_id].std())
+        results["sim_max"].append(ss[0][:num].max())
+        results["sim_min"].append(ss[0][:num].min())
+        results["sim_mean"].append(ss[0][:num].mean())
+        results["sim_std"].append(ss[0][:num].std())
+        results["sim_num"].append(num)
 
     return results
 
@@ -285,10 +294,11 @@ def main(c: DictConfig) -> None:
     for path in cfg.data_paths:
         # データ読み込み
         df = pd.read_csv(path)
+        df[["A", "B", "C", "D", "E"]] = df[["A", "B", "C", "D", "E"]].fillna("")
 
         df.reset_index(inplace=True, drop=True)
         if cfg.debug:
-            df = df.head()
+            df = df.head(15)
         print(f"{path}:{df.shape}")
         df["answer_all"] = df.apply(lambda x: " ".join([x["A"], x["B"], x["C"], x["D"], x["E"]]), axis=1)
         df["prompt_answer_stem"] = df["prompt"] + " " + df["answer_all"]
@@ -314,6 +324,9 @@ def main(c: DictConfig) -> None:
             cfg.wiki_index_path,
         )
         print(wikipedia_file_data.head())
+        del search_score
+        del search_index
+        _ = gc.collect()
 
         # wikipedia text data 取得 ("id", "title", "text")
         print("【wikipedia text data 取得】")
@@ -321,7 +334,7 @@ def main(c: DictConfig) -> None:
             wikipedia_file_data,
             cfg.wiki_dir,
         )
-        print(wiki_text_data.head())
+        print(wiki_text_data.tail())
 
         ## Parse documents into sentences
         print("【sentencize】")
@@ -332,7 +345,11 @@ def main(c: DictConfig) -> None:
             cfg.window_size,
             cfg.sliding_size,
         )
-        print(processed_wiki_text_data.head())
+        print(processed_wiki_text_data.tail())
+        # print data size(GB) of processed_wiki_text_data
+        print("processed_wiki_text_data size(GB):", sys.getsizeof(processed_wiki_text_data) / 1024**3)
+        del wiki_text_data  # 追加
+        _ = gc.collect()
 
         ## Get embeddings of the wiki text data
         print("【Get embeddings of the wiki text data】")
@@ -346,6 +363,9 @@ def main(c: DictConfig) -> None:
         )  # .half()
         # wiki_data_embeddings = wiki_data_embeddings.detach().cpu().numpy()
         wiki_data_embeddings = wiki_data_embeddings.astype(np.float32)
+        # print data size(GB) of wiki_data_embeddings
+        print("wiki_data_embeddings size(GB):", sys.getsizeof(wiki_data_embeddings) / 1024**3)
+
         _ = gc.collect()
         torch.cuda.empty_cache()
 
@@ -379,6 +399,7 @@ def main(c: DictConfig) -> None:
         df["sim_min"] = results["sim_min"]
         df["sim_mean"] = results["sim_mean"]
         df["sim_std"] = results["sim_std"]
+        df["sim_num"] = results["sim_num"]
 
         # 保存
         print("【保存】")
@@ -388,10 +409,7 @@ def main(c: DictConfig) -> None:
         del wiki_data_embeddings
         del question_embeddings
         del df
-        del search_score
-        del search_index
         del wikipedia_file_data
-        del wiki_text_data
         del processed_wiki_text_data
         _ = gc.collect()
 

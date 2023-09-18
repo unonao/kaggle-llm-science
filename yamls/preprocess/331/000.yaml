@@ -1,18 +1,27 @@
 data_paths:
-  - preprocessed/901_concat/data0.csv
-  - preprocessed/901_concat/data1.csv
-  - preprocessed/901_concat/data2.csv
+  #- preprocessed/901_concat/data2.csv
+  #- preprocessed/901_concat/data1.csv # () (51824 2402723 1.7636476205661893 GB)  (231: 52190 123315 0.59263GB)
+  #- preprocessed/901_concat/data0_0.csv
+  - preprocessed/901_concat/data0_10000.csv
+  - preprocessed/901_concat/data0_20000.csv
+  - preprocessed/901_concat/data0_30000.csv
+  - preprocessed/901_concat/data0_40000.csv
+  - preprocessed/901_concat/data0_50000.csv
+  - preprocessed/901_concat/data0_60000.csv
+  - preprocessed/901_concat/data0_70000.csv
+  - preprocessed/901_concat/data0_80000.csv
+  - preprocessed/901_concat/data0_90000.csv
 
 wiki_dir: input/llm-science-wikipedia-data-b 
 wiki_index_path: preprocessed/320_doc_index/001/all.parquet # b
 index_path: preprocessed/320_doc_index/001/ivfpq_index.faiss
 sim_model: BAAI/bge-small-en
 max_length: 384
-batch_size: 8
-doc_top_k: 10
-num_sentences_include: 15
-window_size: 3
-sliding_size: 2
+batch_size: 32
+doc_top_k: 4
+num_sentences_include: 20
+window_size: 4
+sliding_size: 3
 
 debug: ${debug}
 seed: 7
