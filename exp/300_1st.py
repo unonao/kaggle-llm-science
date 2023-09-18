@@ -98,7 +98,6 @@ def main(c: DictConfig) -> None:
         df_train = df_train.head()
         df_valid = df_valid.head()
         df_valid2 = df_valid2.head()
-        cfg.training_args.logging_steps = 50
     print(f"train:{df_train.shape}, valid:{df_valid.shape}, valid2:{df_valid2.shape}")
 
     def preprocess_df(df, mode="train"):

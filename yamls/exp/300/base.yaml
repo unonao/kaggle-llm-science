@@ -15,6 +15,7 @@ training_args:
   evaluation_strategy: steps
   save_strategy: steps
   logging_steps: 1000
+  save_steps: 1000
   metric_for_best_model: map@3
   save_total_limit: 1
   load_best_model_at_end: true
