@@ -1,9 +1,5 @@
 """
-1st の学習結果を使って 2nd のデータを作成する
-
-1. 元データと1stの結果読み込み
-2. tf-idf なども用いて特徴量を作成。集約特徴量も作成
-3. (prompt_id, option) で一意の行になるように分割
+option同士での平均距離を特徴量に追加
 """
 
 import pandas as pd
@@ -18,6 +14,17 @@ from omegaconf import DictConfig, OmegaConf
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+import re
+
+
+def clean_text(text: str) -> str:
+    """
+    tf-idfの前にテキストを整形する
+    """
+    text = text.lower()
+    text = re.sub(r'[?|!|\'|"|#]', r"", text)
+    text = re.sub(r"[.|,|)|(|\|/]", r" ", text)
+    return text
 
 
 def get_tfidf(row: dict[str, str]) -> np.ndarray:
@@ -27,26 +34,33 @@ def get_tfidf(row: dict[str, str]) -> np.ndarray:
     # tfidfの計算
     tfidf = TfidfVectorizer()
     base_cols = ["A", "B", "C", "D", "E"]
-    fit_cols = base_cols + ["context", "prompt"]
+    fit_cols = base_cols + ["prompt"]
     tfidf_vec = tfidf.fit([row[col] for col in fit_cols])
-    # base_cols と context の 類似度を計算
+    # base_cols の 類似度を計算
     base_vec = tfidf_vec.transform([row[col] for col in base_cols])
-    context_vec = tfidf_vec.transform([row["context"]])
-    sim = cosine_similarity(base_vec, context_vec)
-    return sim
+    sim_options = cosine_similarity(base_vec, base_vec)
+    mean_sim_options = sim_options.mean(axis=1)
+    return mean_sim_options
 
 
-def make_dataset(df: pd.DataFrame, pred: np.ndarray) -> pd.DataFrame:
+def make_dataset(df: pd.DataFrame) -> pd.DataFrame:
     """
     元データと1stの予測結果を結合して2ndのデータを作成する
     """
+    # テキスト整形
+    print("テキスト整形")
+    for col in ["context", "prompt", "A", "B", "C", "D", "E"]:
+        df[col] = df[col].fillna("").apply(clean_text)
+
     # まずはtfidf
     print("tfidfを計算")
-    tfidf_array = []
+    tfidf_option_array = []
     for _, row in tqdm(df.iterrows(), total=len(df)):
-        tfidf_array.append(get_tfidf(row))
-    tfidf_array = np.array(tfidf_array).squeeze()
-    print(f"tfidf_array:{tfidf_array.shape}")
+        sim_options = get_tfidf(row)
+        tfidf_option_array.append(sim_options)
+
+    tfidf_option_array = np.array(tfidf_option_array).squeeze()
+    print(f"tfidf_option_array:{tfidf_option_array.shape}")
 
     # dfの各行について、A,B,C,D,Eのカラムそれぞれを別の行にする
     print("A,B,C,D,Eのカラムを分割")
@@ -58,24 +72,15 @@ def make_dataset(df: pd.DataFrame, pred: np.ndarray) -> pd.DataFrame:
                 "option_index": oi,
                 "option": option,
                 "label": option == row["answer"],
-                "len_context": len(row["context"].split(" ")),
-                "pred": pred[di, oi],
-                "pred_div": pred[di, oi] / pred[di].max(),
-                "pred_max": pred[di].max(),
-                "pred_min": pred[di].min(),
-                "pred_mean": pred[di].mean(),
-                "pred_std": pred[di].std(),
-                "sim_max": row["sim_max"],
-                "sim_min": row["sim_min"],
-                "sim_mean": row["sim_mean"],
-                "sim_std": row["sim_std"],
-                "sim_num": row["sim_num"],
-                "tfidf": tfidf_array[di, oi],
-                "tfidf_div": tfidf_array[di, oi] / (tfidf_array[di].max() + 1e-8),
-                "tfidf_max": tfidf_array[di].max(),
-                "tfidf_min": tfidf_array[di].min(),
-                "tfidf_mean": tfidf_array[di].mean(),
-                "tfidf_std": tfidf_array[di].std(),
+                "len_prompt": len(row["prompt"].split(" ")),
+                "len_option": len(row[option].split(" ")),
+                "len_sum": len(row["prompt"].split(" ")) + len(row[option].split(" ")),
+                "tfidf_option_mean": tfidf_option_array[di, oi],
+                "tfidf_option_div": tfidf_option_array[di, oi] / (tfidf_option_array[di].max() + 1e-8),
+                "tfidf_option_max": tfidf_option_array[di].max(),
+                "tfidf_option_min": tfidf_option_array[di].min(),
+                "tfidf_option_mean": tfidf_option_array[di].mean(),
+                "tfidf_option_std": tfidf_option_array[di].std(),
             }
             records.append(record)
 
@@ -99,9 +104,8 @@ def main(c: DictConfig) -> None:
         print(f"preprocess {data_name}")
         print(data_dict)
         df = pd.read_csv(data_dict["base_path"])
-        pred = np.load(data_dict["pred_path"])
-        print(f"df:{df.shape}, pred:{pred.shape}")
-        dataset_df = make_dataset(df, pred)
+        print(f"df:{df.shape},")
+        dataset_df = make_dataset(df)
         dataset_df.to_csv(preprocessed_path / f"{data_name}_2nd.csv", index=False)
 
 

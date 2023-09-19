@@ -241,7 +241,7 @@ def extract_contexts_from_matching_pairs(
     question_embeddings: np.ndarray,
     num_sentences_include: int = 5,
 ):
-    results = {"contexts": [], "sim_min": [], "sim_max": [], "sim_mean": [], "sim_std": []}
+    results = {"contexts": [], "sim_min": [], "sim_max": [], "sim_mean": [], "sim_std": [], "sim_num": []}
     for r in tqdm(df.itertuples(), total=len(df)):
         prompt_id = r.Index
         prompt_indices = processed_wiki_text_data[

@@ -96,8 +96,8 @@ def main(c: DictConfig) -> None:
     df_valid2 = pd.read_csv(cfg.data2_path).reset_index(drop=True)
     if cfg.debug:
         df_train = df_train.head(10)
-        # df_valid = df_valid.head(10)
-        # df_valid2 = df_valid2.head(10)
+        df_valid = df_valid.head(10)
+        df_valid2 = df_valid2.head(10)
     print(f"train:{df_train.shape}, valid:{df_valid.shape}, valid2:{df_valid2.shape}")
 
     def preprocess_df(df, mode="train"):
@@ -106,6 +106,11 @@ def main(c: DictConfig) -> None:
             df["context"].apply(lambda x: " ".join(x.split()[:max_length])) + f"... {cfg.sep_token} " + df["prompt"]
         )
         df["prompt_with_context"] = df["prompt_with_context"].apply(clean_text)
+
+        # 空を埋める
+        options = ["A", "B", "C", "D", "E"]
+        for option in options:
+            df[option] = df[option].fillna("")
         return df
 
     df_train = preprocess_df(df_train)
@@ -187,6 +192,7 @@ def main(c: DictConfig) -> None:
         compute_metrics=compute_metrics,
     )
 
+    # trainer.train(resume_from_checkpoint=True)
     trainer.train()
 
     with utils.timer("valid"):

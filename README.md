@@ -33,7 +33,7 @@ python -m wikiextractor.WikiExtractor input/enwiki-20230701-pages-articles-multi
 python preprocess/300_wiki_data_a.py 
 ## yet
 python preprocess/310_embedding_a.py preprocess=310/000 
-preprocess/320_doc_index.py preprocess=320/000
+python preprocess/320_doc_index.py preprocess=320/000
 
 
 # download https://dumps.wikimedia.org/other/cirrussearch/current/enwiki-20230911-cirrussearch-content.json.gz
@@ -63,16 +63,18 @@ python exp/200_new.py exp=200/001
 1st
 
 ```sh
-python preprocess/330_retrieve_a.py preprocess=330/000 debug=True
+python preprocess/330_retrieve_a.py preprocess=330/000
 
-python preprocess/331_retrieve_b.py preprocess=331/000 debug=True
-python exp/300_1st.py exp=300/000 debug=True
+python preprocess/331_retrieve_b.py preprocess=331/000 
+python exp/300_1st.py exp=300/000
 ```
 
 2nd
 
 ```sh
- python preprocess/340_2nd_data.py preprocess=340/000
+python preprocess/340_2nd_data.py preprocess=340/000
+python preprocess/341_2nd_data.py preprocess=340/000
+python exp/400_2nd.py exp=400/000
 ```
 
 kaggle dataset
@@ -87,11 +89,11 @@ zip -r  llm-science-wikipedia-data-b/data.zip input/llm-science-wikipedia-data-b
 kaggle datasets create -p llm-science-wikipedia-data-b --dir-mode zip
 
 kaggle datasets create -p llm-science-models --dir-mode zip
-kaggle datasets version -p llm-science-models/ -m v1.6.0  --dir-mode zip
+kaggle datasets version -p llm-science-models/ -m v1.7.0  --dir-mode zip
 
 kaggle datasets init -p llm-science-index
 kaggle datasets create -p llm-science-index --dir-mode zip
-kaggle datasets version -p llm-science-index/ -m v1.3.0  --dir-mode zip
+kaggle datasets version -p llm-science-index/ -m v1.4.0  --dir-mode zip
 
 kaggle datasets create -p llm-science-wikipedia --dir-mode zip
 kaggle datasets version -p llm-science-wikipedia  -m v1.0.0 
