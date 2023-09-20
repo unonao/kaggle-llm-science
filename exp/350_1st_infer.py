@@ -92,10 +92,12 @@ def main(c: DictConfig) -> None:
 
     df_valid = pd.read_csv(cfg.data1_path).reset_index(drop=True)
     df_valid2 = pd.read_csv(cfg.data2_path).reset_index(drop=True)
+    df_valid3 = pd.read_csv(cfg.data3_path).reset_index(drop=True)
     if cfg.debug:
         df_valid = df_valid.head(10)
         df_valid2 = df_valid2.head(10)
-    print(f"valid:{df_valid.shape}, valid2:{df_valid2.shape}")
+        df_valid3 = df_valid3.head(10)
+    print(f"valid:{df_valid.shape}, valid2:{df_valid2.shape}, valid3:{df_valid3.shape}")
 
     def preprocess_df(df, mode="train"):
         max_length = cfg.max_length if mode == "train" else cfg.max_length_valid  # 推論時はtokenを長く取る
@@ -112,9 +114,11 @@ def main(c: DictConfig) -> None:
 
     df_valid = preprocess_df(df_valid, mode="valid")
     df_valid2 = preprocess_df(df_valid2, mode="valid")
+    df_valid3 = preprocess_df(df_valid3, mode="valid")
 
     dataset_valid = Dataset.from_pandas(df_valid)
     dataset_valid2 = Dataset.from_pandas(df_valid2)
+    dataset_valid3 = Dataset.from_pandas(df_valid3)
 
     tokenizer = AutoTokenizer.from_pretrained(cfg.model_path)
     option_to_index = {option: idx for idx, option in enumerate("ABCDE")}
@@ -132,6 +136,9 @@ def main(c: DictConfig) -> None:
         preprocess, batched=False, remove_columns=["prompt_with_context", "prompt", "A", "B", "C", "D", "E", "answer"]
     )
     tokenized_dataset_valid2 = dataset_valid2.map(
+        preprocess, batched=False, remove_columns=["prompt_with_context", "prompt", "A", "B", "C", "D", "E", "answer"]
+    )
+    tokenized_dataset_valid3 = dataset_valid3.map(
         preprocess, batched=False, remove_columns=["prompt_with_context", "prompt", "A", "B", "C", "D", "E", "answer"]
     )
 
@@ -172,16 +179,16 @@ def main(c: DictConfig) -> None:
         # valid を確認
         valid_pred = trainer.predict(tokenized_dataset_valid).predictions
         valid2_pred = trainer.predict(tokenized_dataset_valid2).predictions
+        valid3_pred = trainer.predict(tokenized_dataset_valid3).predictions
         # torch softmaxをかける
         valid_pred = torch.softmax(torch.tensor(valid_pred), dim=1).numpy()
         valid2_pred = torch.softmax(torch.tensor(valid2_pred), dim=1).numpy()
+        valid3_pred = torch.softmax(torch.tensor(valid3_pred), dim=1).numpy()
 
         result_dict = {
             "data1_map@3": map_k(df_valid["answer"].to_numpy(), predictions_to_map_output(valid_pred)),
             "data2_map@3": map_k(df_valid2["answer"].to_numpy(), predictions_to_map_output(valid2_pred)),
-            "train_csv_map@3": map_k(
-                df_valid2["answer"].head(200).to_numpy(), predictions_to_map_output(valid2_pred[:200, :])
-            ),
+            "train_csv_map@3": map_k(df_valid3["answer"].to_numpy(), predictions_to_map_output(valid3_pred)),
         }
         print(result_dict)
         wandb.log(result_dict)
@@ -190,6 +197,7 @@ def main(c: DictConfig) -> None:
         output_path.mkdir(exist_ok=True, parents=True)
         np.save(output_path / "data1_pred.npy", valid_pred)
         np.save(output_path / "data2_pred.npy", valid2_pred)
+        np.save(output_path / "data3_pred.npy", valid3_pred)
 
 
 if __name__ == "__main__":

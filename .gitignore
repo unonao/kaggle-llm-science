@@ -4,9 +4,7 @@ input/
 output/
 preprocessed/
 wandb/
-llm-science-models/
-llm-science-index/
-llm-science-wikipedia-data*/
+dataset/
 *.csv
 
 # Byte-compiled / optimized / DLL files

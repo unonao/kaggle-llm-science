@@ -49,7 +49,7 @@ def make_dataset(df: pd.DataFrame) -> pd.DataFrame:
     """
     # テキスト整形
     print("テキスト整形")
-    for col in ["context", "prompt", "A", "B", "C", "D", "E"]:
+    for col in ["prompt", "A", "B", "C", "D", "E"]:
         df[col] = df[col].fillna("").apply(clean_text)
 
     # まずはtfidf

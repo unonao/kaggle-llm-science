@@ -46,6 +46,7 @@ python preprocess/311_embedding_b.py preprocess=311/000
 python preprocess/320_doc_index.py preprocess=320/001
 
 python preprocess/311_embedding_b.py preprocess=311/001
+python preprocess/320_doc_index.py preprocess=320/002
 ```
 
 ### その他
@@ -57,8 +58,9 @@ python preprocess/330_retrieve_a.py preprocess=330/000
 python preprocess/330_retrieve_a.py preprocess=330/001
 
 python preprocess/331_retrieve_b.py preprocess=331/000 
-python preprocess/331_retrieve_b.py preprocess=331/001
 python exp/300_1st.py exp=300/000
+python preprocess/331_retrieve_b.py preprocess=331/001
+python exp/300_1st.py exp=300/001
 
 python exp/350_1st_infer.py exp=350/000 debug=True
 ```
@@ -85,11 +87,10 @@ python exp/200_new.py exp=200/000
 python exp/200_new.py exp=200/001
 ```
 
-1st
-
 kaggle dataset
 
 ```sh
+cd dataset
 kaggle datasets init -p llm-science-wikipedia-data-a
 zip -r  llm-science-wikipedia-data-a/data.zip input/llm-science-wikipedia-data-a
 kaggle datasets create -p llm-science-wikipedia-data-a --dir-mode zip
@@ -107,5 +108,8 @@ kaggle datasets version -p llm-science-index/ -m v1.4.0  --dir-mode zip
 
 kaggle datasets create -p llm-science-wikipedia --dir-mode zip
 kaggle datasets version -p llm-science-wikipedia  -m v1.0.0 
+
+kaggle datasets init -p llm-science-lgb
+kaggle datasets create -p llm-science-lgb --dir-mode zip
 
 ```

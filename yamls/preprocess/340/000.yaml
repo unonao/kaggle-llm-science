@@ -5,3 +5,6 @@ data:
   data2:
     base_path: preprocessed/331_retrieve_b/000/data2.csv
     pred_path: output/300_1st/000/data2_pred.npy
+  data3:
+    base_path: preprocessed/331_retrieve_b/000/train.csv
+    pred_path: output/300_1st/000/data3_pred.npy
