@@ -1,6 +1,7 @@
 
 data_dir_dict:
-  b_bge_3_5_4: preprocessed/341_2nd_data/000 # preprocessed/340_2nd_data/000
+  b_bge_3_5_4: preprocessed/340_2nd_data/000 # preprocessed/340_2nd_data/000
+  base: preprocessed/350_2nd_option/000
 
 
 lgbm:
@@ -25,7 +26,7 @@ lgbm:
     num_thread: -1
     max_bin: 256
     verbose: -1
-    device: cpu
+    device: gpu
     scale_pos_weight: 1
     seed: 777
     num_class: 1

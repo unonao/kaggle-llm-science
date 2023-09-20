@@ -44,9 +44,34 @@ python -m wikiextractor.cirrus-extract input/enwiki-20230911-cirrussearch-conten
 python preprocess/301_wiki_data_b.py
 python preprocess/311_embedding_b.py preprocess=311/000
 python preprocess/320_doc_index.py preprocess=320/001
+
+python preprocess/311_embedding_b.py preprocess=311/001
 ```
 
 ### その他
+
+1st
+
+```sh
+python preprocess/330_retrieve_a.py preprocess=330/000
+python preprocess/330_retrieve_a.py preprocess=330/001
+
+python preprocess/331_retrieve_b.py preprocess=331/000 
+python preprocess/331_retrieve_b.py preprocess=331/001
+python exp/300_1st.py exp=300/000
+
+python exp/350_1st_infer.py exp=350/000 debug=True
+```
+
+2nd
+
+```sh
+python preprocess/340_2nd_data.py preprocess=340/000
+python preprocess/350_2nd_option.py preprocess=350/000
+python exp/400_2nd.py exp=400/000
+```
+
+旧
 
 ```sh
 python exp/007_validation.py exp=007/006
@@ -62,21 +87,6 @@ python exp/200_new.py exp=200/001
 
 1st
 
-```sh
-python preprocess/330_retrieve_a.py preprocess=330/000
-
-python preprocess/331_retrieve_b.py preprocess=331/000 
-python exp/300_1st.py exp=300/000
-```
-
-2nd
-
-```sh
-python preprocess/340_2nd_data.py preprocess=340/000
-python preprocess/341_2nd_data.py preprocess=340/000
-python exp/400_2nd.py exp=400/000
-```
-
 kaggle dataset
 
 ```sh
@@ -89,7 +99,7 @@ zip -r  llm-science-wikipedia-data-b/data.zip input/llm-science-wikipedia-data-b
 kaggle datasets create -p llm-science-wikipedia-data-b --dir-mode zip
 
 kaggle datasets create -p llm-science-models --dir-mode zip
-kaggle datasets version -p llm-science-models/ -m v1.7.0  --dir-mode zip
+kaggle datasets version -p llm-science-models/ -m v1.8.0  --dir-mode zip
 
 kaggle datasets init -p llm-science-index
 kaggle datasets create -p llm-science-index --dir-mode zip

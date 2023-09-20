@@ -404,7 +404,6 @@ def main(c: DictConfig) -> None:
         del search_score
         del search_index
         del wikipedia_file_data
-        del wiki_text_data
         del processed_wiki_text_data
         _ = gc.collect()
 

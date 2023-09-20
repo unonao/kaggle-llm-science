@@ -1,6 +1,6 @@
 wiki_dir: input/llm-science-wikipedia-data-b
-sim_model: thenlper/gte-small # all-MiniLM-L6-v2
-max_sentence_length: 200 # 若干細かく
+sim_model: intfloat/multilingual-e5-small
+max_sentence_length: 200
 max_sentence_num: 300
 max_length: 384
 batch_size: 16

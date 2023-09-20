@@ -1,12 +1,12 @@
 data_paths:
-  #- preprocessed/901_concat/data1.csv
-  #- preprocessed/901_concat/data2.csv
-  #- preprocessed/901_concat/data0_0.csv
-  #- preprocessed/901_concat/data0_10000.csv
-  #- preprocessed/901_concat/data0_20000.csv
-  #- preprocessed/901_concat/data0_30000.csv
-  #- preprocessed/901_concat/data0_40000.csv
-  #- preprocessed/901_concat/data0_50000.csv
+  - preprocessed/901_concat/data1.csv
+  - preprocessed/901_concat/data2.csv
+  - preprocessed/901_concat/data0_0.csv
+  - preprocessed/901_concat/data0_10000.csv
+  - preprocessed/901_concat/data0_20000.csv
+  - preprocessed/901_concat/data0_30000.csv
+  - preprocessed/901_concat/data0_40000.csv
+  - preprocessed/901_concat/data0_50000.csv
   - preprocessed/901_concat/data0_60000.csv
   - preprocessed/901_concat/data0_70000.csv
   - preprocessed/901_concat/data0_80000.csv
@@ -20,8 +20,8 @@ max_length: 384
 batch_size: 32
 doc_top_k: 3
 num_sentences_include: 20
-window_size: 4
-sliding_size: 3
+window_size: 3
+sliding_size: 2
 
 debug: ${debug}
 seed: 7
