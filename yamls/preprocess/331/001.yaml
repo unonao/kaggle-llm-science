@@ -1,4 +1,5 @@
 data_paths:
+  - input/kaggle-llm-science-exam/train.csv
   - preprocessed/901_concat/data2.csv
   - preprocessed/901_concat/data1.csv 
   - preprocessed/901_concat/data0_0.csv

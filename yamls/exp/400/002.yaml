@@ -15,16 +15,16 @@ lgbm:
     feature_fraction: 0.8
     bagging_fraction: 0.8
     bagging_freq: 1
-    min_child_samples: 10
+    min_child_samples: 30 # 小さいほど過学習
     task: train
     boosting_type: gbdt
     objective: binary
     metric: binary_logloss
     ndcg_eval_at: []
-    max_depth: 8
+    max_depth: 4
     learning_rate: 0.05
     num_thread: -1
-    max_bin: 256
+    max_bin: 32
     verbose: -1
     device: cpu
     scale_pos_weight: 1
