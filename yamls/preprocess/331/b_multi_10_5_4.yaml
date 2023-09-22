@@ -1,0 +1,18 @@
+data_paths:
+  - input/kaggle-llm-science-exam/train.csv
+  - preprocessed/901_concat/data2.csv
+  - preprocessed/901_concat/data1.csv 
+  
+wiki_dir: input/llm-science-wikipedia-data-b 
+wiki_index_path: preprocessed/320_doc_index/002/all.parquet # b
+index_path: preprocessed/320_doc_index/002/ivfpq_index.faiss
+sim_model: intfloat/multilingual-e5-small
+max_length: 384
+batch_size: 32
+num_sentences_include: 20
+doc_top_k: 10
+window_size: 5
+sliding_size: 4
+
+debug: ${debug}
+seed: 7

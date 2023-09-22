@@ -66,6 +66,18 @@ python exp/350_1st_infer.py exp=350/000
 python exp/350_1st_infer.py exp=350/001
 python exp/350_1st_infer.py exp=350/002
 python exp/350_1st_infer.py exp=350/003
+
+python exp/350_1st_infer.py exp=350/b_multi_5_4_3
+python exp/350_1st_infer.py exp=350/a_gte_5_4_3
+python exp/350_1st_infer.py exp=350/b_bge_5_4_3
+
+python preprocess/331_retrieve_b.py preprocess=331/b_multi_10_4_3
+python preprocess/331_retrieve_b.py preprocess=331/b_multi_10_5_4
+python preprocess/330_retrieve_a.py preprocess=330/a_gte_10_3_2
+python preprocess/330_retrieve_a.py preprocess=330/a_gte_10_4_3
+python preprocess/331_retrieve_b.py preprocess=331/b_bge_10_3_2 
+python preprocess/331_retrieve_b.py preprocess=331/b_bge_10_4_3 
+python preprocess/331_retrieve_b.py preprocess=331/b_bge_10_5_4
 ```
 
 2nd
@@ -75,6 +87,9 @@ python preprocess/350_2nd_option.py preprocess=350/000 # base
 # each model
 python preprocess/340_2nd_data.py preprocess=340/000 
 python exp/400_2nd.py exp=400/000
+
+# blend
+python exp/500_blend.py exp=500/000
 ```
 
 旧
@@ -108,7 +123,7 @@ kaggle datasets version -p llm-science-models/ -m v1.8.0  --dir-mode zip
 
 kaggle datasets init -p llm-science-index
 kaggle datasets create -p llm-science-index --dir-mode zip
-kaggle datasets version -p llm-science-index/ -m v1.4.0  --dir-mode zip
+kaggle datasets version -p llm-science-index/ -m v1.5.0  --dir-mode zip
 
 kaggle datasets create -p llm-science-wikipedia --dir-mode zip
 kaggle datasets version -p llm-science-wikipedia  -m v1.0.0 
