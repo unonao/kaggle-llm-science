@@ -1,5 +1,5 @@
 """
-1stの結果を読み込んでネルダーミード法で重み付けを行う
+1stの結果を読み込んで重み付けを行う
 
 """
 
@@ -90,12 +90,13 @@ def main(c: DictConfig) -> None:
         return -map1
 
     res = minimize(objective, initial_weights, bounds=bounds, method="Nelder-Mead")
-    print("weights:", res.x)
+    weights = res.x / res.x.sum()
+    print("weights:", weights)
 
     # 重みを元にdata2, data3の予測結果を作成
     pred2 = np.zeros_like(pred2_list[0])
     pred3 = np.zeros_like(pred3_list[0])
-    for i, w in enumerate(res.x):
+    for i, w in enumerate(weights):
         pred2 += w * pred2_list[i]
         pred3 += w * pred3_list[i]
     pred2 = predictions_to_map_output(pred2)

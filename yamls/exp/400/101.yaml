@@ -1,0 +1,36 @@
+
+data_dir_dict:
+  a_gte_10_3_2: preprocessed/340_2nd_data/a_gte_10_3_2
+  a_gte_10_4_3: preprocessed/340_2nd_data/a_gte_10_4_3
+  b_bge_10_4_3: preprocessed/340_2nd_data/b_bge_10_4_3
+  b_multi_10_4_3: preprocessed/340_2nd_data/b_multi_10_4_3
+  base: preprocessed/350_2nd_option/000
+
+
+lgbm:
+  verbose_eval: 50
+  num_boost_round: 2000
+  params:
+    early_stopping_round: 50
+    lambda_l1: 0.1
+    lambda_l2: 0.1
+    num_leaves: 32
+    feature_fraction: 0.8
+    bagging_fraction: 0.8
+    bagging_freq: 1
+    min_child_samples: 30 # 小さいほど過学習
+    task: train
+    boosting_type: gbdt
+    objective: binary
+    metric: binary_logloss
+    ndcg_eval_at: []
+    max_depth: 4
+    learning_rate: 0.05
+    num_thread: -1
+    max_bin: 32
+    verbose: -1
+    device: cpu
+    scale_pos_weight: 1
+    seed: 777
+    num_class: 1
+  

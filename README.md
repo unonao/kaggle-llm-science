@@ -47,6 +47,9 @@ python preprocess/320_doc_index.py preprocess=320/001
 
 python preprocess/311_embedding_b.py preprocess=311/001
 python preprocess/320_doc_index.py preprocess=320/002
+
+
+python preprocess/311_embedding_b.py preprocess=311/002
 ```
 
 ### その他
@@ -62,31 +65,39 @@ python exp/300_1st.py exp=300/000
 python preprocess/331_retrieve_b.py preprocess=331/001
 python exp/300_1st.py exp=300/001
 
-python exp/350_1st_infer.py exp=350/000
-python exp/350_1st_infer.py exp=350/001
-python exp/350_1st_infer.py exp=350/002
-python exp/350_1st_infer.py exp=350/003
-
-python exp/350_1st_infer.py exp=350/b_multi_5_4_3
-python exp/350_1st_infer.py exp=350/a_gte_5_4_3
-python exp/350_1st_infer.py exp=350/b_bge_5_4_3
-
 python preprocess/331_retrieve_b.py preprocess=331/b_multi_10_4_3
 python preprocess/331_retrieve_b.py preprocess=331/b_multi_10_5_4
 python preprocess/330_retrieve_a.py preprocess=330/a_gte_10_3_2
 python preprocess/330_retrieve_a.py preprocess=330/a_gte_10_4_3
-python preprocess/331_retrieve_b.py preprocess=331/b_bge_10_3_2 
-python preprocess/331_retrieve_b.py preprocess=331/b_bge_10_4_3 
+python preprocess/331_retrieve_b.py preprocess=331/b_bge_10_3_2
+python preprocess/331_retrieve_b.py preprocess=331/b_bge_10_4_3
 python preprocess/331_retrieve_b.py preprocess=331/b_bge_10_5_4
+
+python exp/350_1st_infer.py exp=350/a_gte_10_3_2
+python exp/350_1st_infer.py exp=350/a_gte_10_4_3
+python exp/350_1st_infer.py exp=350/b_bge_10_3_2
+python exp/350_1st_infer.py exp=350/b_bge_10_4_3
+python exp/350_1st_infer.py exp=350/b_bge_10_5_4
+python exp/350_1st_infer.py exp=350/b_multi_10_4_3
+python exp/350_1st_infer.py exp=350/b_multi_10_5_4
 ```
 
 2nd
 
 ```sh
 python preprocess/350_2nd_option.py preprocess=350/000 # base
-# each model
 python preprocess/340_2nd_data.py preprocess=340/000 
 python exp/400_2nd.py exp=400/000
+
+
+python preprocess/340_2nd_data.py preprocess=340/a_gte_10_3_2 
+python preprocess/340_2nd_data.py preprocess=340/a_gte_10_4_3
+python preprocess/340_2nd_data.py preprocess=340/b_bge_10_3_2
+python preprocess/340_2nd_data.py preprocess=340/b_bge_10_4_3
+python preprocess/340_2nd_data.py preprocess=340/b_bge_10_5_4
+python preprocess/340_2nd_data.py preprocess=340/b_multi_10_4_3
+
+python exp/400_2nd.py exp=400/100
 
 # blend
 python exp/500_blend.py exp=500/000
@@ -130,6 +141,6 @@ kaggle datasets version -p llm-science-wikipedia  -m v1.0.0
 
 kaggle datasets init -p llm-science-lgb
 kaggle datasets create -p llm-science-lgb --dir-mode zip
-kaggle datasets version -p llm-science-lgb  -m v1.1.0
+kaggle datasets version -p llm-science-lgb  -m v1.2.0
 
 ```

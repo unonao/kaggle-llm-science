@@ -1,0 +1,10 @@
+data:
+  data1:
+    base_path: preprocessed/331_retrieve_b/b_bge_10_4_3/data1.csv
+    pred_path: output/350_1st_infer/b_bge_10_4_3/data1_pred.npy
+  data2:
+    base_path: preprocessed/331_retrieve_b/b_bge_10_4_3/data2.csv
+    pred_path: output/350_1st_infer/b_bge_10_4_3/data2_pred.npy
+  data3:
+    base_path: preprocessed/331_retrieve_b/b_bge_10_4_3/train.csv
+    pred_path: output/350_1st_infer/b_bge_10_4_3/data3_pred.npy
