@@ -1,0 +1,7 @@
+window_size: 3
+sliding_size: 2
+parquet_dir: input/llm-science-wikipedia-data-b
+
+
+debug: ${debug}
+seed: 7

@@ -49,7 +49,10 @@ python preprocess/311_embedding_b.py preprocess=311/001
 python preprocess/320_doc_index.py preprocess=320/002
 
 
-python preprocess/311_embedding_b.py preprocess=311/002
+python preprocess/311_embedding_b.py preprocess=311/003
+
+
+python preprocess/325_fts_db.py preprocess=325/000
 ```
 
 ### その他
@@ -64,6 +67,8 @@ python preprocess/331_retrieve_b.py preprocess=331/000
 python exp/300_1st.py exp=300/000
 python preprocess/331_retrieve_b.py preprocess=331/001
 python exp/300_1st.py exp=300/001
+
+python preprocess/331_retrieve_b.py preprocess=331/002 # デカいモデル
 
 python preprocess/331_retrieve_b.py preprocess=331/b_multi_10_4_3
 python preprocess/331_retrieve_b.py preprocess=331/b_multi_10_5_4
@@ -141,6 +146,6 @@ kaggle datasets version -p llm-science-wikipedia  -m v1.0.0
 
 kaggle datasets init -p llm-science-lgb
 kaggle datasets create -p llm-science-lgb --dir-mode zip
-kaggle datasets version -p llm-science-lgb  -m v1.2.0
+kaggle datasets version -p dataset/llm-science-lgb  -m v1.4.0
 
 ```

@@ -1,0 +1,9 @@
+wiki_dir: input/llm-science-wikipedia-data-b
+sim_model: BAAI/bge-base-en-v1.5
+max_sentence_length: 300
+max_sentence_num: 300
+max_length: 512
+batch_size: 4
+
+debug: ${debug}
+seed: 7
