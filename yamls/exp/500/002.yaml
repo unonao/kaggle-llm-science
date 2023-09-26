@@ -1,0 +1,7 @@
+data1_path: preprocessed/901_concat/data1.csv 
+data2_path: preprocessed/901_concat/data2.csv
+data3_path: input/kaggle-llm-science-exam/train.csv
+
+pred_dirs:
+  - output/350_1st_infer/000
+  - output/350_1st_infer/001

@@ -17,9 +17,11 @@ import numpy as np
 import pandas as pd
 from hydra.core.hydra_config import HydraConfig
 from omegaconf import DictConfig, OmegaConf
+from pandarallel import pandarallel
 from sentence_transformers import SentenceTransformer
 from tqdm.auto import tqdm
 
+pandarallel.initialize(progress_bar=True)
 libc = ctypes.CDLL("libc.so.6")
 sys.path.append(os.pardir)
 
@@ -105,6 +107,7 @@ def main(c: DictConfig) -> None:
         print("df.shape:", df.shape)
 
         # セクションごとに分割し compress_sections で、もとのidと一緒に新たなdfを作成
+        """
         sections = []
         ids = []
         for i, row in tqdm(df.iterrows(), total=len(df)):
@@ -113,8 +116,25 @@ def main(c: DictConfig) -> None:
             )
             sections += secs
             ids += [row["id"]] * len(secs)
+        """
+        # 上記をapplyで書くと早い
+        df["sections"] = df.parallel_apply(
+            lambda row: compress_and_split_sections(
+                row["text"], row["title"], cfg.max_sentence_length, cfg.max_sentence_num
+            ),
+            axis=1,
+        )
 
-        sections_df = pd.DataFrame({"id": ids, "section_text": sections})
+        sections_df = (
+            pd.DataFrame(
+                {
+                    "id": df["id"],
+                    "section_text": df["sections"],
+                }
+            )
+            .explode(["section_text"])
+            .reset_index(drop=True)
+        )
         print("sections_df.shape:", sections_df.shape)
 
         # 埋め込みを作成
@@ -138,7 +158,8 @@ def main(c: DictConfig) -> None:
         del df
         del sections_df
         del section_embeddings
-        gc.collect()
+        _ = gc.collect()
+        libc.malloc_trim(0)
 
         if cfg.debug:
             break

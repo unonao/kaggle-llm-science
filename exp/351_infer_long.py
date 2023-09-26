@@ -13,16 +13,15 @@ from datasets import Dataset
 from hydra.core.hydra_config import HydraConfig
 from omegaconf import DictConfig, OmegaConf
 from transformers import (
-    AutoModel,
-    AutoModelForMultipleChoice,
-    AutoTokenizer,
-    EarlyStoppingCallback,
+    LongformerTokenizer,
+    LongformerForMultipleChoice,
     Trainer,
     TrainingArguments,
 )
 from transformers.tokenization_utils_base import PaddingStrategy, PreTrainedTokenizerBase
 
 import wandb
+import logging
 
 sys.path.append(os.pardir)
 
@@ -30,6 +29,8 @@ import utils
 
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 os.environ["TRANSFORMERS_NO_ADVISORY_WARNINGS"] = "true"
+
+logging.disable(logging.WARNING)
 
 
 @dataclass
@@ -90,56 +91,64 @@ def main(c: DictConfig) -> None:
 
     # os.makedirs(output_path, exist_ok=True)
 
-    df_valid = pd.read_csv(cfg.data1_path).head(5).reset_index(drop=True)
+    df_valid = pd.read_csv(cfg.data1_path).reset_index(drop=True)
     df_valid2 = pd.read_csv(cfg.data2_path).reset_index(drop=True)
     df_valid3 = pd.read_csv(cfg.data3_path).reset_index(drop=True)
+    df_valid = df_valid.head(10)
     if cfg.debug:
         df_valid = df_valid.head(10)
         df_valid2 = df_valid2.head(10)
         df_valid3 = df_valid3.head(10)
     print(f"valid:{df_valid.shape}, valid2:{df_valid2.shape}, valid3:{df_valid3.shape}")
 
-    def preprocess_df(df, mode="train"):
-        max_length = cfg.max_length if mode == "train" else cfg.max_length_valid  # 推論時はtokenを長く取る
-        df["prompt_with_context"] = (
-            df["context"].apply(lambda x: " ".join(x.split()[:max_length])) + f"... {cfg.sep_token} " + df["prompt"]
-        )
-        df["prompt_with_context"] = df["prompt_with_context"].apply(clean_text)
-
+    def preprocess_df(df):
+        cols = ["prompt", "A", "B", "C", "D", "E"]
+        # clean
+        for col in cols:
+            df[col] = df[col].apply(clean_text)
         # 空を埋める
         options = ["A", "B", "C", "D", "E"]
         for option in options:
             df[option] = df[option].fillna("")
         return df
 
-    df_valid = preprocess_df(df_valid, mode="valid")
-    df_valid2 = preprocess_df(df_valid2, mode="valid")
-    df_valid3 = preprocess_df(df_valid3, mode="valid")
+    df_valid = preprocess_df(df_valid)
+    df_valid2 = preprocess_df(df_valid2)
+    df_valid3 = preprocess_df(df_valid3)
 
     dataset_valid = Dataset.from_pandas(df_valid)
     dataset_valid2 = Dataset.from_pandas(df_valid2)
     dataset_valid3 = Dataset.from_pandas(df_valid3)
 
-    tokenizer = AutoTokenizer.from_pretrained(cfg.model_path)
+    tokenizer = LongformerTokenizer.from_pretrained("potsawee/longformer-large-4096-answering-race")
+
     option_to_index = {option: idx for idx, option in enumerate("ABCDE")}
     index_to_option = {v: k for k, v in option_to_index.items()}
 
     def preprocess(example):
-        first_sentence = [example["prompt_with_context"]] * 5
-        second_sentences = [example[option] for option in "ABCDE"]
-        tokenized_example = tokenizer(first_sentence, second_sentences, truncation=False)
+        context = example["context"]
+        question = example["prompt"]
+        options = [example[option] for option in "ABCDE"]
+        c_plus_q = context + " " + tokenizer.bos_token + " " + question
+        c_plus_q_4 = [c_plus_q] * len(options)
+        tokenized_example = tokenizer(
+            c_plus_q_4,
+            options,
+            max_length=cfg.max_seq_length,
+            truncation="longest_first",
+        )
         tokenized_example["label"] = option_to_index[example["answer"]]
 
         return tokenized_example
 
     tokenized_dataset_valid = dataset_valid.map(
-        preprocess, batched=False, remove_columns=["prompt_with_context", "prompt", "A", "B", "C", "D", "E", "answer"]
+        preprocess, batched=False, remove_columns=["prompt", "A", "B", "C", "D", "E", "answer"]
     )
     tokenized_dataset_valid2 = dataset_valid2.map(
-        preprocess, batched=False, remove_columns=["prompt_with_context", "prompt", "A", "B", "C", "D", "E", "answer"]
+        preprocess, batched=False, remove_columns=["prompt", "A", "B", "C", "D", "E", "answer"]
     )
     tokenized_dataset_valid3 = dataset_valid3.map(
-        preprocess, batched=False, remove_columns=["prompt_with_context", "prompt", "A", "B", "C", "D", "E", "answer"]
+        preprocess, batched=False, remove_columns=["prompt", "A", "B", "C", "D", "E", "answer"]
     )
 
     # https://www.kaggle.com/code/philippsinger/h2ogpt-perplexity-ranking
@@ -169,7 +178,7 @@ def main(c: DictConfig) -> None:
         )  # Transforming indices to options - i.e., 0 --> A
         return np.apply_along_axis(lambda row: " ".join(row), 1, top_answers)
 
-    model = AutoModelForMultipleChoice.from_pretrained(cfg.model_path)
+    model = LongformerForMultipleChoice.from_pretrained("potsawee/longformer-large-4096-answering-race")
     args = TrainingArguments(output_dir="output/tmp", per_device_eval_batch_size=1)
     trainer = Trainer(
         model=model, args=args, tokenizer=tokenizer, data_collator=DataCollatorForMultipleChoice(tokenizer=tokenizer)

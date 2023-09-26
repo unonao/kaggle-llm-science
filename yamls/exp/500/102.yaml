@@ -8,4 +8,5 @@ pred_dirs:
   #- output/350_1st_infer/b_bge_10_3_2
   - output/350_1st_infer/b_bge_10_4_3
   #- output/350_1st_infer/b_bge_10_5_4
-  - output/350_1st_infer/b_multi_10_4_3  
+  - output/350_1st_infer/b_multi_10_4_3
+  - output/350_1st_infer/tfidf

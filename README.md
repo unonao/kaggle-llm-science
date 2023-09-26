@@ -68,23 +68,9 @@ python exp/300_1st.py exp=300/000
 python preprocess/331_retrieve_b.py preprocess=331/001
 python exp/300_1st.py exp=300/001
 
-python preprocess/331_retrieve_b.py preprocess=331/002 # デカいモデル
-
-python preprocess/331_retrieve_b.py preprocess=331/b_multi_10_4_3
-python preprocess/331_retrieve_b.py preprocess=331/b_multi_10_5_4
-python preprocess/330_retrieve_a.py preprocess=330/a_gte_10_3_2
-python preprocess/330_retrieve_a.py preprocess=330/a_gte_10_4_3
-python preprocess/331_retrieve_b.py preprocess=331/b_bge_10_3_2
-python preprocess/331_retrieve_b.py preprocess=331/b_bge_10_4_3
 python preprocess/331_retrieve_b.py preprocess=331/b_bge_10_5_4
 
 python exp/350_1st_infer.py exp=350/a_gte_10_3_2
-python exp/350_1st_infer.py exp=350/a_gte_10_4_3
-python exp/350_1st_infer.py exp=350/b_bge_10_3_2
-python exp/350_1st_infer.py exp=350/b_bge_10_4_3
-python exp/350_1st_infer.py exp=350/b_bge_10_5_4
-python exp/350_1st_infer.py exp=350/b_multi_10_4_3
-python exp/350_1st_infer.py exp=350/b_multi_10_5_4
 ```
 
 2nd
@@ -96,31 +82,13 @@ python exp/400_2nd.py exp=400/000
 
 
 python preprocess/340_2nd_data.py preprocess=340/a_gte_10_3_2 
-python preprocess/340_2nd_data.py preprocess=340/a_gte_10_4_3
-python preprocess/340_2nd_data.py preprocess=340/b_bge_10_3_2
-python preprocess/340_2nd_data.py preprocess=340/b_bge_10_4_3
-python preprocess/340_2nd_data.py preprocess=340/b_bge_10_5_4
-python preprocess/340_2nd_data.py preprocess=340/b_multi_10_4_3
-
+python preprocess/400_base_data.py
 python exp/400_2nd.py exp=400/100
 
 # blend
 python exp/500_blend.py exp=500/000
 ```
 
-旧
-
-```sh
-python exp/007_validation.py exp=007/006
-
-# bullt 対処前のwikidump
-python preprocess/200_wiki.py 
-python preprocess/210_embedding.py  preprocess=210/000 debug=True
-python preprocess/220_doc_index.py preprocess=220/000 
-python preprocess/231_retrieve.py preprocess=230/000  # 前処理追加したので注意
-python exp/200_new.py exp=200/000 
-python exp/200_new.py exp=200/001
-```
 
 kaggle dataset
 
@@ -149,3 +117,8 @@ kaggle datasets create -p llm-science-lgb --dir-mode zip
 kaggle datasets version -p dataset/llm-science-lgb  -m v1.4.0
 
 ```
+
+```sh
+python exp/300_1st.py exp=300/002
+```
+

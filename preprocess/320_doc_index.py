@@ -73,8 +73,6 @@ def main(c: DictConfig) -> None:
     del all_embeddings_list
     gc.collect()
     print("all_embeddings :", all_embeddings.nbytes / (1024**3), " GB")
-    all_embeddings = all_embeddings.astype(np.float32, copy=False)
-    print("all_embeddings :", all_embeddings.nbytes / (1024**3), " GB")
     gc.collect()
     np.save(preprocessed_path / "all.npy", all_embeddings)
 

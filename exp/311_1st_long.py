@@ -12,15 +12,10 @@ import torch
 from datasets import Dataset
 from hydra.core.hydra_config import HydraConfig
 from omegaconf import DictConfig, OmegaConf
-from transformers import (
-    AutoModel,
-    AutoModelForMultipleChoice,
-    AutoTokenizer,
-    EarlyStoppingCallback,
-    Trainer,
-    TrainingArguments,
-)
-from transformers.tokenization_utils_base import PaddingStrategy, PreTrainedTokenizerBase
+from transformers import (AutoModel, AutoModelForMultipleChoice, AutoTokenizer,
+                          EarlyStoppingCallback, Trainer, TrainingArguments)
+from transformers.tokenization_utils_base import (PaddingStrategy,
+                                                  PreTrainedTokenizerBase)
 
 import wandb
 
@@ -76,6 +71,7 @@ def main(c: DictConfig) -> None:
     runtime_choices = HydraConfig.get().runtime.choices
     exp_name = f"{Path(sys.argv[0]).stem}/{runtime_choices.exp.split('/')[-1]}"
     output_path = Path(f"./output/{exp_name}")
+    cfg.training_args.output_dir = str(output_path)
 
     print(cfg)
 
@@ -90,19 +86,19 @@ def main(c: DictConfig) -> None:
 
     # os.makedirs(output_path, exist_ok=True)
 
-    df_valid = pd.read_csv(cfg.data1_path).head(5).reset_index(drop=True)
+    df_train = pd.concat([pd.read_csv(path) for path in cfg.data0_paths]).reset_index(drop=True)
+    df_valid = pd.read_csv(cfg.data1_path).reset_index(drop=True)
     df_valid2 = pd.read_csv(cfg.data2_path).reset_index(drop=True)
-    df_valid3 = pd.read_csv(cfg.data3_path).reset_index(drop=True)
     if cfg.debug:
+        df_train = df_train.head(10)
         df_valid = df_valid.head(10)
         df_valid2 = df_valid2.head(10)
-        df_valid3 = df_valid3.head(10)
-    print(f"valid:{df_valid.shape}, valid2:{df_valid2.shape}, valid3:{df_valid3.shape}")
+    print(f"train:{df_train.shape}, valid:{df_valid.shape}, valid2:{df_valid2.shape}")
 
     def preprocess_df(df, mode="train"):
         max_length = cfg.max_length if mode == "train" else cfg.max_length_valid  # 推論時はtokenを長く取る
         df["prompt_with_context"] = (
-            df["context"].apply(lambda x: " ".join(x.split()[:max_length])) + f"... {cfg.sep_token} " + df["prompt"]
+            df["context"].apply(lambda x: " ".join(x.split()[:max_length])) + f" ... " + df["prompt"]
         )
         df["prompt_with_context"] = df["prompt_with_context"].apply(clean_text)
 
@@ -112,15 +108,15 @@ def main(c: DictConfig) -> None:
             df[option] = df[option].fillna("")
         return df
 
+    df_train = preprocess_df(df_train)
     df_valid = preprocess_df(df_valid, mode="valid")
     df_valid2 = preprocess_df(df_valid2, mode="valid")
-    df_valid3 = preprocess_df(df_valid3, mode="valid")
 
+    dataset_train = Dataset.from_pandas(df_train)
     dataset_valid = Dataset.from_pandas(df_valid)
     dataset_valid2 = Dataset.from_pandas(df_valid2)
-    dataset_valid3 = Dataset.from_pandas(df_valid3)
 
-    tokenizer = AutoTokenizer.from_pretrained(cfg.model_path)
+    tokenizer = AutoTokenizer.from_pretrained(cfg.model_name)
     option_to_index = {option: idx for idx, option in enumerate("ABCDE")}
     index_to_option = {v: k for k, v in option_to_index.items()}
 
@@ -132,14 +128,14 @@ def main(c: DictConfig) -> None:
 
         return tokenized_example
 
+    tokenized_dataset_train = dataset_train.map(
+        preprocess, remove_columns=["prompt_with_context", "prompt", "A", "B", "C", "D", "E", "answer"]
+    )
     tokenized_dataset_valid = dataset_valid.map(
-        preprocess, batched=False, remove_columns=["prompt_with_context", "prompt", "A", "B", "C", "D", "E", "answer"]
+        preprocess, remove_columns=["prompt_with_context", "prompt", "A", "B", "C", "D", "E", "answer"]
     )
     tokenized_dataset_valid2 = dataset_valid2.map(
-        preprocess, batched=False, remove_columns=["prompt_with_context", "prompt", "A", "B", "C", "D", "E", "answer"]
-    )
-    tokenized_dataset_valid3 = dataset_valid3.map(
-        preprocess, batched=False, remove_columns=["prompt_with_context", "prompt", "A", "B", "C", "D", "E", "answer"]
+        preprocess, remove_columns=["prompt_with_context", "prompt", "A", "B", "C", "D", "E", "answer"]
     )
 
     # https://www.kaggle.com/code/philippsinger/h2ogpt-perplexity-ranking
@@ -169,35 +165,52 @@ def main(c: DictConfig) -> None:
         )  # Transforming indices to options - i.e., 0 --> A
         return np.apply_along_axis(lambda row: " ".join(row), 1, top_answers)
 
-    model = AutoModelForMultipleChoice.from_pretrained(cfg.model_path)
-    args = TrainingArguments(output_dir="output/tmp", per_device_eval_batch_size=1)
+    def compute_metrics(eval_preds):
+        logits, labels = eval_preds
+        y_pred = predictions_to_map_output(logits)
+        y_true = [index_to_option[label] for label in labels]
+        return {cfg.training_args.metric_for_best_model: map_k(y_true, y_pred)}
+
+    ## Training
+    training_args = TrainingArguments(**OmegaConf.to_container(cfg)["training_args"])
+
+    model = AutoModelForMultipleChoice.from_pretrained(cfg.model_name)
+
     trainer = Trainer(
-        model=model, args=args, tokenizer=tokenizer, data_collator=DataCollatorForMultipleChoice(tokenizer=tokenizer)
+        model=model,
+        args=training_args,
+        tokenizer=tokenizer,
+        data_collator=DataCollatorForMultipleChoice(tokenizer=tokenizer),
+        train_dataset=tokenized_dataset_train,
+        eval_dataset=tokenized_dataset_valid2,
+        callbacks=[EarlyStoppingCallback(early_stopping_patience=cfg.early_stopping_patience)],
+        compute_metrics=compute_metrics,
     )
+
+    # trainer.train(resume_from_checkpoint=True)
+    trainer.train()
 
     with utils.timer("valid"):
         # valid を確認
         valid_pred = trainer.predict(tokenized_dataset_valid).predictions
         valid2_pred = trainer.predict(tokenized_dataset_valid2).predictions
-        valid3_pred = trainer.predict(tokenized_dataset_valid3).predictions
         # torch softmaxをかける
         valid_pred = torch.softmax(torch.tensor(valid_pred), dim=1).numpy()
         valid2_pred = torch.softmax(torch.tensor(valid2_pred), dim=1).numpy()
-        valid3_pred = torch.softmax(torch.tensor(valid3_pred), dim=1).numpy()
 
         result_dict = {
             "data1_map@3": map_k(df_valid["answer"].to_numpy(), predictions_to_map_output(valid_pred)),
             "data2_map@3": map_k(df_valid2["answer"].to_numpy(), predictions_to_map_output(valid2_pred)),
-            "train_csv_map@3": map_k(df_valid3["answer"].to_numpy(), predictions_to_map_output(valid3_pred)),
+            "train_csv_map@3": map_k(
+                df_valid2["answer"].head(200).to_numpy(), predictions_to_map_output(valid2_pred[:200, :])
+            ),
         }
         print(result_dict)
         wandb.log(result_dict)
 
         # 予測結果をnumpyで保存
-        output_path.mkdir(exist_ok=True, parents=True)
         np.save(output_path / "data1_pred.npy", valid_pred)
         np.save(output_path / "data2_pred.npy", valid2_pred)
-        np.save(output_path / "data3_pred.npy", valid3_pred)
 
 
 if __name__ == "__main__":

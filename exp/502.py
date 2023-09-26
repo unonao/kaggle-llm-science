@@ -1,20 +1,21 @@
 """
-1stの結果を読み込んで、確率値の最大値を予測とする
+1stの結果を読み込んで重み付けを行う
 
 """
 
 
-import os
+import pandas as pd
+import numpy as np
 import sys
 from pathlib import Path
-
+from tqdm.auto import tqdm
+import os
 import hydra
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
 from hydra.core.hydra_config import HydraConfig
 from omegaconf import DictConfig, OmegaConf
-from tqdm.auto import tqdm
+import matplotlib.pyplot as plt
+
+from scipy.optimize import minimize
 
 
 def precision_at_k(r, k):
@@ -62,24 +63,39 @@ def main(c: DictConfig) -> None:
 
     print(cfg)
 
-    # data1 = pd.read_csv(cfg.data1_path)
     data2 = pd.read_csv(cfg.data2_path)
     data3 = pd.read_csv(cfg.data3_path)
 
     # numpy の予測結果を読み込む
-    # pred1_list = []
     pred2_list = []
     pred3_list = []
     for dir_path in cfg.pred_dirs:
-        # pred1_list.append(np.load(f"{dir_path}/data1_pred.npy"))
         pred2_list.append(np.load(f"{dir_path}/data2_pred.npy"))
         pred3_list.append(np.load(f"{dir_path}/data3_pred.npy"))
 
-    # 確率値のmaxを取って、予測結果を作成
-    # pred1 = np.max(pred1_list, axis=0)
-    pred2 = np.max(pred2_list, axis=0)
-    pred3 = np.max(pred3_list, axis=0)
+    n = len(pred2_list)
+    initial_weights = [1.0 / n for _ in range(n)]
+    bounds = [(0, 1) for _ in range(n)]
 
+    def objective(weights):
+        pred1 = np.zeros_like(pred2_list[0])
+        for i, w in enumerate(weights):
+            pred1 += w * pred2_list[i]
+        pred1 = predictions_to_map_output(pred1)
+        true1 = data2["answer"].values
+        map1 = map_k(true1, pred1)
+        return -map1
+
+    res = minimize(objective, initial_weights, bounds=bounds, method="Nelder-Mead")
+    weights = res.x / res.x.sum()
+    print("weights:", weights)
+
+    # 重みを元にdata2, data3の予測結果を作成
+    pred2 = np.zeros_like(pred2_list[0])
+    pred3 = np.zeros_like(pred3_list[0])
+    for i, w in enumerate(weights):
+        pred2 += w * pred2_list[i]
+        pred3 += w * pred3_list[i]
     pred2 = predictions_to_map_output(pred2)
     pred3 = predictions_to_map_output(pred3)
     true2 = data2["answer"].values

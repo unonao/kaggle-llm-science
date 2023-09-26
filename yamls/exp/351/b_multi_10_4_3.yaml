@@ -1,0 +1,10 @@
+model_path: potsawee/longformer-large-4096-answering-race
+
+debug: ${debug}
+seed: 7
+
+max_seq_length: 4096
+
+data1_path: preprocessed/331_retrieve_b/b_multi_10_4_3/data1.csv
+data2_path: preprocessed/331_retrieve_b/b_multi_10_4_3/data2.csv
+data3_path: preprocessed/331_retrieve_b/b_multi_10_4_3/train.csv

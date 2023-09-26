@@ -18,4 +18,4 @@ services:
             - driver: nvidia
               count: 1
               capabilities: [ gpu ]
-    shm_size: '10gb'
+    shm_size: '20gb'

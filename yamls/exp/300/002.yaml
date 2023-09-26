@@ -1,0 +1,30 @@
+# b
+defaults:
+  - 300/base@_here_
+
+model_name: microsoft/deberta-v3-large
+sep_token : [SEP]
+early_stopping_patience: 4
+
+training_args:
+  gradient_accumulation_steps: 2
+  gradient_checkpointing: true
+  per_device_train_batch_size: 2
+  per_device_eval_batch_size: 2
+  weight_decay: 0.02
+  optim: adamw_bnb_8bit
+  num_train_epochs: 30
+  save_total_limit: 2
+
+max_length: 150
+max_length_valid: 300
+
+data0_paths: 
+  - preprocessed/331_retrieve_b/000/data0_0.csv
+  - preprocessed/331_retrieve_b/000/data0_10000.csv
+  - preprocessed/331_retrieve_b/000/data0_20000.csv
+  - preprocessed/331_retrieve_b/000/data0_30000.csv
+  - preprocessed/331_retrieve_b/000/data0_40000.csv
+  - preprocessed/331_retrieve_b/000/data0_50000.csv
+data1_path: preprocessed/331_retrieve_b/000/data1.csv
+data2_path: preprocessed/331_retrieve_b/000/data2.csv
