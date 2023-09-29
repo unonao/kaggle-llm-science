@@ -89,7 +89,6 @@ python exp/400_2nd.py exp=400/100
 python exp/500_blend.py exp=500/000
 ```
 
-
 kaggle dataset
 
 ```sh
@@ -107,7 +106,10 @@ kaggle datasets version -p llm-science-models/ -m v1.8.0  --dir-mode zip
 
 kaggle datasets init -p llm-science-index
 kaggle datasets create -p llm-science-index --dir-mode zip
-kaggle datasets version -p llm-science-index/ -m v1.5.0  --dir-mode zip
+kaggle datasets version -p dataset/llm-science-index/ -m v1.6.0  --dir-mode zip
+
+kaggle datasets init -p dataset/llm-science-filter-index
+kaggle datasets create -p dataset/llm-science-filter-index --dir-mode zip
 
 kaggle datasets create -p llm-science-wikipedia --dir-mode zip
 kaggle datasets version -p llm-science-wikipedia  -m v1.0.0 
@@ -119,6 +121,40 @@ kaggle datasets version -p dataset/llm-science-lgb  -m v1.4.0
 ```
 
 ```sh
-python exp/300_1st.py exp=300/002
+
+python preprocess/335_retrieve_a_improve.py preprocess=335/a_gte_10_3_2
+python preprocess/335_retrieve_a_improve.py preprocess=335/a_gte_10_4_3
+python preprocess/336_retrieve_b_improve.py preprocess=336/b_bge_10_4_3
+python preprocess/336_retrieve_b_improve.py preprocess=336/b_multi_10_4_3
+
+
+python preprocess/336_retrieve_b_improve.py preprocess=336/b_bge_base_10_4_3
+python preprocess/336_retrieve_b_improve.py preprocess=336/b_minilm_10_4_3
+python preprocess/500_index.py preprocess=500/parse_multi
+python preprocess/500_index.py preprocess=500/nparse_bge
+python preprocess/500_index.py preprocess=500/nparse_multi
+python preprocess/500_index.py preprocess=500/parse_bge
+
+python preprocess/510_retrieval.py preprocess=510/parse_bge
+python preprocess/510_retrieval.py preprocess=510/parse_multi
+python preprocess/510_retrieval.py preprocess=510/nparse_bge
+python preprocess/510_retrieval.py preprocess=510/nparse_multi
+
+
+# これから
+python exp/350_1st_infer.py exp=350/new_b_bge_base_10_4_3
+python exp/350_1st_infer.py exp=350/new_b_minilm_10_4_3
+
+# ローカル：510の推論、maxでの調整、lightgbmの活用検討
+# submit: 510系のsubをまずはシングルで→アンサンブルで
 ```
 
+```sh
+# lightgbmのためにinferのdata0のheadを削除して実行
+python exp/350_1st_infer.py exp=350/new_a_gte_10_3_2
+python exp/350_1st_infer.py exp=350/new_a_gte_10_4_3
+python exp/350_1st_infer.py exp=350/new_b_bge_10_4_3
+python exp/350_1st_infer.py exp=350/new_b_multi_10_4_3
+python exp/350_1st_infer.py exp=350/new_b_bge_base_10_4_3
+python exp/350_1st_infer.py exp=350/new_b_minilm_10_4_3
+```

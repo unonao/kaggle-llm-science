@@ -1,0 +1,12 @@
+filter_wiki_path: preprocessed/400_base_data/filter_2_1.parquet
+sim_model: intfloat/multilingual-e5-small
+
+max_length: 512
+batch_size: 8
+
+nlist : 100
+n_subquantizer : 64
+n_bits : 8
+
+debug: ${debug}
+seed: 7

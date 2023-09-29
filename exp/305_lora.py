@@ -27,6 +27,7 @@ import wandb
 sys.path.append(os.pardir)
 
 import utils
+from utils.model import LlamaMultipleChoice
 
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 os.environ["TRANSFORMERS_NO_ADVISORY_WARNINGS"] = "true"
@@ -179,7 +180,15 @@ def main(c: DictConfig) -> None:
     ## Training
     training_args = TrainingArguments(**OmegaConf.to_container(cfg)["training_args"])
 
-    model = AutoModelForMultipleChoice.from_pretrained(cfg.model_name)
+    model = LlamaMultipleChoice.from_pretrained(cfg.model_name)
+    lora_config = LoraConfig(
+        r=16,
+        lora_alpha=32,
+        lora_dropout=0.05,
+        bias="none",
+    )
+
+    model.set_lora(lora_config)
 
     trainer = Trainer(
         model=model,
@@ -192,8 +201,8 @@ def main(c: DictConfig) -> None:
         compute_metrics=compute_metrics,
     )
 
-    trainer.train(resume_from_checkpoint=True)
-    # trainer.train()
+    # trainer.train(resume_from_checkpoint=True)
+    trainer.train()
 
     with utils.timer("valid"):
         # valid を確認

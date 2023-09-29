@@ -18,7 +18,11 @@ from pandarallel import pandarallel
 pandarallel.initialize(progress_bar=True)
 
 
-configs = [{"window_size": 4, "sliding_size": 2}, {"window_size": 2, "sliding_size": 1}]
+configs = [
+    {"window_size": 10, "sliding_size": 10},  # ほぼそのまま入力
+    {"window_size": 4, "sliding_size": 2},
+    {"window_size": 2, "sliding_size": 1},
+]
 
 
 def extract_chunk_by_sliding_window(text: str, window_size: int, sliding_size: int) -> list[str]:
