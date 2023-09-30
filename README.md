@@ -55,6 +55,8 @@ python preprocess/311_embedding_b.py preprocess=311/003
 python preprocess/325_fts_db.py preprocess=325/000
 ```
 
+tm
+
 ### その他
 
 1st
@@ -126,30 +128,22 @@ python preprocess/335_retrieve_a_improve.py preprocess=335/a_gte_10_3_2
 python preprocess/335_retrieve_a_improve.py preprocess=335/a_gte_10_4_3
 python preprocess/336_retrieve_b_improve.py preprocess=336/b_bge_10_4_3
 python preprocess/336_retrieve_b_improve.py preprocess=336/b_multi_10_4_3
-
-
 python preprocess/336_retrieve_b_improve.py preprocess=336/b_bge_base_10_4_3
 python preprocess/336_retrieve_b_improve.py preprocess=336/b_minilm_10_4_3
+
 python preprocess/500_index.py preprocess=500/parse_multi
 python preprocess/500_index.py preprocess=500/nparse_bge
 python preprocess/500_index.py preprocess=500/nparse_multi
 python preprocess/500_index.py preprocess=500/parse_bge
-
 python preprocess/510_retrieval.py preprocess=510/parse_bge
 python preprocess/510_retrieval.py preprocess=510/parse_multi
 python preprocess/510_retrieval.py preprocess=510/nparse_bge
 python preprocess/510_retrieval.py preprocess=510/nparse_multi
+python exp/350_1st_infer.py exp=350/parse_bge
+python exp/350_1st_infer.py exp=350/parse_multi
+python exp/350_1st_infer.py exp=350/nparse_bge
+python exp/350_1st_infer.py exp=350/nparse_multi
 
-
-# これから
-python exp/350_1st_infer.py exp=350/new_b_bge_base_10_4_3
-python exp/350_1st_infer.py exp=350/new_b_minilm_10_4_3
-
-# ローカル：510の推論、maxでの調整、lightgbmの活用検討
-# submit: 510系のsubをまずはシングルで→アンサンブルで
-```
-
-```sh
 # lightgbmのためにinferのdata0のheadを削除して実行
 python exp/350_1st_infer.py exp=350/new_a_gte_10_3_2
 python exp/350_1st_infer.py exp=350/new_a_gte_10_4_3
@@ -157,4 +151,16 @@ python exp/350_1st_infer.py exp=350/new_b_bge_10_4_3
 python exp/350_1st_infer.py exp=350/new_b_multi_10_4_3
 python exp/350_1st_infer.py exp=350/new_b_bge_base_10_4_3
 python exp/350_1st_infer.py exp=350/new_b_minilm_10_4_3
+
+python exp/600_max.py exp=500/107
+
+# これから
+# ローカル：maxでの調整、lightgbmの活用検討、シングルモデルの改善方法検討
+# submit: 510系のsubをまずはシングルで→アンサンブルで
+
+```
+
+```sh
+python exp/360_infer_label.py exp=360/000 
+python exp/302_1st_soft.py exp=302/000
 ```

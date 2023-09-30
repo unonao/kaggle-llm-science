@@ -22,7 +22,6 @@ from transformers import (
 )
 from transformers.tokenization_utils_base import PaddingStrategy, PreTrainedTokenizerBase
 
-import wandb
 
 sys.path.append(os.pardir)
 
@@ -81,46 +80,7 @@ def main(c: DictConfig) -> None:
 
     utils.seed_everything(cfg.seed)
 
-    wandb.init(
-        project="kaggle-llm-science-pipeline",
-        name=exp_name,
-        mode="online" if cfg.debug is False else "disabled",
-        config=OmegaConf.to_container(cfg),
-    )
-
     # os.makedirs(output_path, exist_ok=True)
-
-    df_valid = pd.read_csv(cfg.data1_path).reset_index(drop=True)
-    df_valid2 = pd.read_csv(cfg.data2_path).reset_index(drop=True)
-    df_valid3 = pd.read_csv(cfg.data3_path).reset_index(drop=True)
-    if cfg.debug:
-        df_valid = df_valid.head(10)
-        df_valid2 = df_valid2.head(10)
-        df_valid3 = df_valid3.head(10)
-    print(f"valid:{df_valid.shape}, valid2:{df_valid2.shape}, valid3:{df_valid3.shape}")
-
-    def preprocess_df(df, mode="train"):
-        max_length = cfg.max_length if mode == "train" else cfg.max_length_valid  # 推論時はtokenを長く取る
-        df["prompt_with_context"] = (
-            df["context"].fillna("no context").apply(lambda x: " ".join(x.split()[:max_length]))
-            + f"... {cfg.sep_token} "
-            + df["prompt"].fillna("")
-        )
-        df["prompt_with_context"] = df["prompt_with_context"].apply(clean_text)
-
-        # 空を埋める
-        options = ["A", "B", "C", "D", "E"]
-        for option in options:
-            df[option] = df[option].fillna("")
-        return df
-
-    df_valid = preprocess_df(df_valid, mode="valid")
-    df_valid2 = preprocess_df(df_valid2, mode="valid")
-    df_valid3 = preprocess_df(df_valid3, mode="valid")
-
-    dataset_valid = Dataset.from_pandas(df_valid)
-    dataset_valid2 = Dataset.from_pandas(df_valid2)
-    dataset_valid3 = Dataset.from_pandas(df_valid3)
 
     tokenizer = AutoTokenizer.from_pretrained(cfg.model_path)
     option_to_index = {option: idx for idx, option in enumerate("ABCDE")}
@@ -134,15 +94,20 @@ def main(c: DictConfig) -> None:
 
         return tokenized_example
 
-    tokenized_dataset_valid = dataset_valid.map(
-        preprocess, batched=False, remove_columns=["prompt_with_context", "prompt", "A", "B", "C", "D", "E", "answer"]
-    )
-    tokenized_dataset_valid2 = dataset_valid2.map(
-        preprocess, batched=False, remove_columns=["prompt_with_context", "prompt", "A", "B", "C", "D", "E", "answer"]
-    )
-    tokenized_dataset_valid3 = dataset_valid3.map(
-        preprocess, batched=False, remove_columns=["prompt_with_context", "prompt", "A", "B", "C", "D", "E", "answer"]
-    )
+    def preprocess_df(df, mode="train"):
+        max_length = cfg.max_length if mode == "train" else cfg.max_length_valid  # 推論時はtokenを長く取る
+        df["prompt_with_context"] = (
+            df["context"].fillna("no context").apply(lambda x: " ".join(x.split()[:max_length])[:2000])
+            + f"... {cfg.sep_token} "
+            + df["prompt"].fillna("")
+        )
+        df["prompt_with_context"] = df["prompt_with_context"].apply(clean_text)
+
+        # 空を埋める
+        options = ["A", "B", "C", "D", "E"]
+        for option in options:
+            df[option] = df[option].fillna("")
+        return df
 
     # https://www.kaggle.com/code/philippsinger/h2ogpt-perplexity-ranking
     def precision_at_k(r, k):
@@ -177,29 +142,28 @@ def main(c: DictConfig) -> None:
         model=model, args=args, tokenizer=tokenizer, data_collator=DataCollatorForMultipleChoice(tokenizer=tokenizer)
     )
 
-    with utils.timer("valid"):
-        # valid を確認
-        valid_pred = trainer.predict(tokenized_dataset_valid).predictions
-        valid2_pred = trainer.predict(tokenized_dataset_valid2).predictions
-        valid3_pred = trainer.predict(tokenized_dataset_valid3).predictions
-        # torch softmaxをかける
-        valid_pred = torch.softmax(torch.tensor(valid_pred), dim=1).numpy()
-        valid2_pred = torch.softmax(torch.tensor(valid2_pred), dim=1).numpy()
-        valid3_pred = torch.softmax(torch.tensor(valid3_pred), dim=1).numpy()
+    for path in cfg.data:
+        df_valid = pd.read_csv(path).reset_index(drop=True)
+        if cfg.debug:
+            # 6361番目の前後だけにする
+            # df_valid = df_valid.iloc[6361 - 10 : 6361 + 10].reset_index(drop=True)
+            df_valid = df_valid.head(20).reset_index(drop=True)
+        df_valid = preprocess_df(df_valid, mode="valid")
+        dataset_valid = Dataset.from_pandas(df_valid)
+        tokenized_dataset_valid = dataset_valid.map(
+            preprocess,
+            batched=False,
+            remove_columns=["prompt_with_context", "prompt", "A", "B", "C", "D", "E", "answer"],
+        )
 
-        result_dict = {
-            "data1_map@3": map_k(df_valid["answer"].to_numpy(), predictions_to_map_output(valid_pred)),
-            "data2_map@3": map_k(df_valid2["answer"].to_numpy(), predictions_to_map_output(valid2_pred)),
-            "train_csv_map@3": map_k(df_valid3["answer"].to_numpy(), predictions_to_map_output(valid3_pred)),
-        }
-        print(result_dict)
-        wandb.log(result_dict)
-
-        # 予測結果をnumpyで保存
-        output_path.mkdir(exist_ok=True, parents=True)
-        np.save(output_path / "data1_pred.npy", valid_pred)
-        np.save(output_path / "data2_pred.npy", valid2_pred)
-        np.save(output_path / "data3_pred.npy", valid3_pred)
+        with utils.timer("valid"):
+            # valid を確認
+            valid_pred = trainer.predict(tokenized_dataset_valid).predictions
+            # torch softmaxをかける
+            valid_pred = torch.softmax(torch.tensor(valid_pred), dim=1).numpy()
+            # 予測結果をnumpyで保存
+            output_path.mkdir(exist_ok=True, parents=True)
+            np.save(output_path / f"{Path(path).stem}.npy", valid_pred)
 
 
 if __name__ == "__main__":

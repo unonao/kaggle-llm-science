@@ -1,0 +1,22 @@
+data1_path: preprocessed/901_concat/data1.csv 
+data2_path: preprocessed/901_concat/data2.csv
+data3_path: input/kaggle-llm-science-exam/train.csv
+
+pred_dirs:
+  # retrieval 変更無し
+  - output/350_1st_infer/a_gte_10_3_2
+  - output/350_1st_infer/new_a_gte_10_4_3
+  #- output/350_1st_infer/b_bge_10_3_2
+  - output/350_1st_infer/b_bge_10_4_3
+  - output/350_1st_infer/new_b_multi_10_4_3
+
+  # retrieval 変更あり
+ # - output/350_1st_infer/new_b_bge_base_10_4_3
+
+  - output/350_1st_infer/parse_multi
+  - output/350_1st_infer/nparse_multi
+  #- output/350_1st_infer/parse_bge
+  #- output/350_1st_infer/nparse_bge
+
+  - output/350_1st_infer/tfidf
+  #- output/350_1st_infer/tfidf_gpu

@@ -7,6 +7,6 @@ seed: 7
 max_length: 150
 max_length_valid: 300
 
-data1_path: preprocessed/420_retrieve/001/data1.csv
-data2_path: preprocessed/420_retrieve/001/data2.csv
-data3_path: preprocessed/420_retrieve/001/train.csv
+data1_path: preprocessed/510_retrieval/parse_multi/data1.csv
+data2_path: preprocessed/510_retrieval/parse_multi/data2.csv
+data3_path: preprocessed/510_retrieval/parse_multi/train.csv

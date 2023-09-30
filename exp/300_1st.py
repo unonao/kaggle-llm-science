@@ -192,8 +192,8 @@ def main(c: DictConfig) -> None:
         compute_metrics=compute_metrics,
     )
 
-    trainer.train(resume_from_checkpoint=True)
-    # trainer.train()
+    # trainer.train(resume_from_checkpoint=True)
+    trainer.train()
 
     with utils.timer("valid"):
         # valid を確認
