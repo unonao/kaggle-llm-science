@@ -1,0 +1,8 @@
+dataset_path: input/all-paraphs-parsed-expanded
+sim_model: thenlper/gte-small
+
+max_length: 512
+batch_size: 8
+
+debug: ${debug}
+seed: 7

@@ -90,7 +90,7 @@ def main(c: DictConfig) -> None:
 
     # os.makedirs(output_path, exist_ok=True)
 
-    df_valid = pd.read_csv(cfg.data1_path).reset_index(drop=True)
+    df_valid = pd.read_csv(cfg.data1_path).head(5).reset_index(drop=True)
     df_valid2 = pd.read_csv(cfg.data2_path).reset_index(drop=True)
     df_valid3 = pd.read_csv(cfg.data3_path).reset_index(drop=True)
     if cfg.debug:

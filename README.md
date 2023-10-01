@@ -112,6 +112,7 @@ kaggle datasets version -p dataset/llm-science-index/ -m v1.6.0  --dir-mode zip
 
 kaggle datasets init -p dataset/llm-science-filter-index
 kaggle datasets create -p dataset/llm-science-filter-index --dir-mode zip
+kaggle datasets version -p dataset/llm-science-filter-index/ -m v1.1.0  --dir-mode zip
 
 kaggle datasets create -p llm-science-wikipedia --dir-mode zip
 kaggle datasets version -p llm-science-wikipedia  -m v1.0.0 
@@ -154,13 +155,46 @@ python exp/350_1st_infer.py exp=350/new_b_minilm_10_4_3
 
 python exp/600_max.py exp=500/107
 
-# これから
 # ローカル：maxでの調整、lightgbmの活用検討、シングルモデルの改善方法検討
 # submit: 510系のsubをまずはシングルで→アンサンブルで
+
+
+python preprocess/500_index.py preprocess=500/parse_e5
+python preprocess/500_index.py preprocess=500/parse_gte
+python preprocess/500_index.py preprocess=500/nparse_e5
+python preprocess/510_retrieval.py preprocess=510/parse_e5
+python preprocess/510_retrieval.py preprocess=510/nparse_e5
+python preprocess/510_retrieval.py preprocess=510/parse_gte
+python exp/350_1st_infer.py exp=350/parse_e5
+python exp/350_1st_infer.py exp=350/nparse_e5
+python exp/350_1st_infer.py exp=350/parse_gte
+
+# まだアンサンブルを試していない
+python preprocess/500_index.py preprocess=500/nparse_gte
+python preprocess/510_retrieval.py preprocess=510/nparse_gte
+python exp/350_1st_infer.py exp=350/nparse_gte
+python preprocess/500_index.py preprocess=500/parse_bge_base
+python preprocess/500_index.py preprocess=500/nparse_bge_base
+python preprocess/500_index.py preprocess=500/parse_gte_base
+python preprocess/500_index.py preprocess=500/nparse_gte_base
+python preprocess/510_retrieval.py preprocess=510/parse_bge_base
+python preprocess/510_retrieval.py preprocess=510/parse_gte_base
+python preprocess/510_retrieval.py preprocess=510/nparse_bge_base
+python preprocess/510_retrieval.py preprocess=510/nparse_gte_base
+python exp/350_1st_infer.py exp=350/parse_bge_base
+python exp/350_1st_infer.py exp=350/parse_gte_base
+python exp/350_1st_infer.py exp=350/nparse_bge_base
+python exp/350_1st_infer.py exp=350/nparse_gte_base
+
+
+# これから
+python preprocess/500_index.py preprocess=500/parse_e5_base
+python preprocess/500_index.py preprocess=500/nparse_e5_base
 
 ```
 
 ```sh
 python exp/360_infer_label.py exp=360/000 
 python exp/302_1st_soft.py exp=302/000
+python exp/303_1st_soft_v2.py exp=302/000 
 ```

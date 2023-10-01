@@ -37,7 +37,7 @@ def retrieval(
     sentence_index = read_index(index_path)  # index 読み込み
     res = faiss.StandardGpuResources()  # use a single GPU
     co = faiss.GpuClonerOptions()
-    co.useFloat16 = True
+    # co.useFloat16 = True ## 注意：メモリが更に必要
     sentence_index = faiss.index_cpu_to_gpu(res, 0, sentence_index, co)
     prompt_embeddings = model.encode(
         df.prompt_answer_stem.values,
