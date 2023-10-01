@@ -95,33 +95,25 @@ def main(c: DictConfig) -> None:
 
     # os.makedirs(output_path, exist_ok=True)
 
-    # answer の値を one-hot にする
-    def option_to_label(option):
-        soft_label = np.zeros(5)
-        soft_label[ord(option) - ord("A")] = 1.0
-        return soft_label
 
     df_train = pd.concat([pd.read_csv(path) for path in cfg.data0_paths]).reset_index(drop=True)
     # train用のsoft labelをnumpyで読み込む
     soft_label = np.concatenate(
         [np.load(Path(cfg.soft_label_dir) / (Path(path).stem + ".npy")) for path in cfg.data0_paths], axis=0
     )
-    hard_label = df_train["answer"].apply(option_to_label).to_numpy()
-    # 各行の和が1になるように、hard_labelが1でsoft_label での確率が0.9以上の要素は 1.0 にし、その行の他の要素は0にする。hard_labelが1でsoft_label での確率が0.9未満のものは 0.8 にし、その行の他の要素は0.05にする。
+    hard_label = np.eye(5)[df_train["answer"].apply(lambda x: ord(x) - ord("A")).values]
     # 出力を保持する配列を初期化します。
-    output = np.zeros_like(soft_label)
-    # hard_labelが1でsoft_label での確率が0.9以上のインデックス
-    high_confidence_indices = np.logical_and(hard_label == 1, soft_label >= 0.9)
+    output = soft_label
     # hard_labelが1でsoft_label での確率が0.9未満のインデックス
-    low_confidence_indices = np.logical_and(hard_label == 1, soft_label < 0.9)
+    low_confidence_indices = np.logical_and(hard_label >=0.5, soft_label < 0.9)
     # 条件に基づいて値をセットします。
-    output[high_confidence_indices] = 1.0
-    output[low_confidence_indices] = 0.8
+    output[low_confidence_indices] = 0.5
     # hard_labelが1でsoft_label での確率が0.9未満の行について、他の要素を0.05にセットします。
     rows_with_low_confidence = np.where(low_confidence_indices)[0]
     for row in rows_with_low_confidence:
-        output[row] = np.where(hard_label[row] == 1, 0.8, 0.05)
+        output[row] = np.where(hard_label[row] == 1, 0.5, 0.125)
     soft_label = output
+    print(soft_label.sum())
 
     df_valid = pd.read_csv(cfg.data1_path).reset_index(drop=True)
     df_valid2 = pd.read_csv(cfg.data2_path).reset_index(drop=True)
@@ -132,9 +124,11 @@ def main(c: DictConfig) -> None:
         df_valid2 = df_valid2.head(10)
     df_train["soft_label"] = soft_label.tolist()
 
-    df_valid["soft_label"] = df_valid["answer"].apply(option_to_label).tolist()
-    df_valid2["soft_label"] = df_valid2["answer"].apply(option_to_label).tolist()
+    df_valid["soft_label"] = np.eye(5)[df_valid["answer"].apply(lambda x: ord(x) - ord("A")).values].tolist()
+    df_valid2["soft_label"] = np.eye(5)[df_valid2["answer"].apply(lambda x: ord(x) - ord("A")).values].tolist()
     print(f"train:{df_train.shape}, valid:{df_valid.shape}, valid2:{df_valid2.shape}")
+
+    print(df_train["soft_label"])
 
     def preprocess_df(df, mode="train"):
         max_length = cfg.max_length if mode == "train" else cfg.max_length_valid  # 推論時はtokenを長く取る
