@@ -112,7 +112,7 @@ kaggle datasets version -p dataset/llm-science-index/ -m v1.6.0  --dir-mode zip
 
 kaggle datasets init -p dataset/llm-science-filter-index
 kaggle datasets create -p dataset/llm-science-filter-index --dir-mode zip
-kaggle datasets version -p dataset/llm-science-filter-index/ -m v1.1.0  --dir-mode zip
+kaggle datasets version -p dataset/llm-science-filter-index/ -m v1.2.0  --dir-mode zip
 
 kaggle datasets create -p llm-science-wikipedia --dir-mode zip
 kaggle datasets version -p llm-science-wikipedia  -m v1.0.0 
@@ -190,6 +190,16 @@ python exp/350_1st_infer.py exp=350/nparse_gte_base
 # これから
 python preprocess/500_index.py preprocess=500/parse_e5_base
 python preprocess/500_index.py preprocess=500/nparse_e5_base
+python preprocess/500_index.py preprocess=500/parse_multi_base
+python preprocess/500_index.py preprocess=500/nparse_multi_base
+python preprocess/510_retrieval.py preprocess=510/parse_e5_base
+python preprocess/510_retrieval.py preprocess=510/nparse_e5_base
+python preprocess/510_retrieval.py preprocess=510/parse_multi_base
+python preprocess/510_retrieval.py preprocess=510/nparse_multi_base
+python exp/350_1st_infer.py exp=350/parse_e5_base
+python exp/350_1st_infer.py exp=350/nparse_e5_base
+python exp/350_1st_infer.py exp=350/parse_multi_base
+python exp/350_1st_infer.py exp=350/nparse_multi_base
 
 ```
 
