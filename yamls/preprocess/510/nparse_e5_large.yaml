@@ -4,8 +4,8 @@ data_paths:
   - preprocessed/901_concat/data1.csv 
   
 filter_wiki_path: preprocessed/500_index/stem-wiki-cohere-no-emb.parquet
-index_path: preprocessed/500_index/nparse_multi_base/index.faiss
-sim_model: intfloat/multilingual-e5-base
+index_path: preprocessed/500_index/nparse_e5_large/index.faiss
+sim_model: intfloat/e5-large-v2
 
 top_k: 10
 max_length: 512

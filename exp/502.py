@@ -75,7 +75,6 @@ def main(c: DictConfig) -> None:
 
     n = len(pred2_list)
     initial_weights = [1.0 / n for _ in range(n)]
-    bounds = [(0, 1) for _ in range(n)]
 
     def objective(weights):
         pred1 = np.zeros_like(pred2_list[0])
@@ -84,9 +83,10 @@ def main(c: DictConfig) -> None:
         pred1 = predictions_to_map_output(pred1)
         true1 = data2["answer"].values
         map1 = map_k(true1, pred1)
+        print("map1:", map1)
         return -map1
 
-    res = minimize(objective, initial_weights, bounds=bounds, method="Nelder-Mead")
+    res = minimize(objective, initial_weights, method="Nelder-Mead")
     weights = res.x / res.x.sum()
     print("weights:", weights)
 

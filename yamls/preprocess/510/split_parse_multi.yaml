@@ -1,0 +1,15 @@
+data_paths:
+  - input/kaggle-llm-science-exam/train.csv
+  - preprocessed/901_concat/data2.csv
+  - preprocessed/901_concat/data1.csv 
+  
+filter_wiki_path: preprocessed/501_index_split/all-paraphs-parsed-expanded_split.parquet #_split
+index_path: preprocessed/501_index_split/parse_multi/index.faiss
+sim_model: intfloat/multilingual-e5-small
+
+top_k: 10
+max_length: 512
+batch_size: 8
+
+debug: ${debug}
+seed: 7

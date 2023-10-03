@@ -12,10 +12,15 @@ import torch
 from datasets import Dataset
 from hydra.core.hydra_config import HydraConfig
 from omegaconf import DictConfig, OmegaConf
-from transformers import (AutoModel, AutoModelForMultipleChoice, AutoTokenizer,
-                          EarlyStoppingCallback, Trainer, TrainingArguments)
-from transformers.tokenization_utils_base import (PaddingStrategy,
-                                                  PreTrainedTokenizerBase)
+from transformers import (
+    AutoModel,
+    AutoModelForMultipleChoice,
+    AutoTokenizer,
+    EarlyStoppingCallback,
+    Trainer,
+    TrainingArguments,
+)
+from transformers.tokenization_utils_base import PaddingStrategy, PreTrainedTokenizerBase
 
 import wandb
 

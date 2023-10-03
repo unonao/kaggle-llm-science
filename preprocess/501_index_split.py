@@ -22,6 +22,34 @@ import pandas as pd
 from hydra.core.hydra_config import HydraConfig
 from datasets import load_dataset, load_from_disk
 from omegaconf import DictConfig, OmegaConf
+import blingfire as bf
+
+
+def split_text(text: str, max_length: int = 1024):
+    """
+    text を受け取って bf で max_length 以内の数センテンスごとに分割する
+    """
+    text = text.replace("\n", " ")
+    text = text.replace("\t", " ")
+
+    _, sentence_offsets = bf.text_to_sentences_and_offsets(text)
+    buffer = ""
+    paragraphs = []
+    for o in sentence_offsets:
+        sentence = text[o[0] : o[1]]
+
+        if len(buffer + sentence) <= max_length:
+            buffer += sentence + " "
+        else:
+            paragraphs.append(buffer.strip())
+            buffer = sentence + " "
+
+    if buffer:
+        paragraphs.append(buffer.strip())
+
+    # 空のセクションをフィルタリング
+    chunks = [chunk for chunk in paragraphs if len(chunk) > 0]
+    return chunks
 
 
 # hydraで設定を読み込む
@@ -38,7 +66,7 @@ def main(c: DictConfig) -> None:
     print(cfg)
     print("preprocessed_path:", preprocessed_path)
 
-    df_path = preprocessed_path.parent / f"{Path(cfg.dataset_path).stem}.parquet"
+    df_path = preprocessed_path.parent / f"{Path(cfg.dataset_path).stem}_split.parquet"
 
     if df_path.exists():
         df = pd.read_parquet(df_path)
@@ -47,6 +75,9 @@ def main(c: DictConfig) -> None:
         dataset = load_from_disk(cfg.dataset_path)
         # データセットの前処理
         df = pd.DataFrame(dataset)
+        print("splitting text...")
+        df["text"] = df["text"].apply(split_text)
+        df = df.explode("text")
         if "section" not in df.columns:
             df["section"] = ""
         df["context"] = df["title"].fillna("") + " > " + df["section"].fillna("") + " > " + df["text"].fillna("")
@@ -74,7 +105,7 @@ def main(c: DictConfig) -> None:
 
     embeddings = embeddings.astype(np.float32)
     # 保存
-    #np.save(preprocessed_path / "embeddings.npy", embeddings)
+    # np.save(preprocessed_path / "embeddings.npy", embeddings)
     print("embeddings.shape:", embeddings.shape)
 
     # index作成

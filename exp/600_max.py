@@ -37,6 +37,20 @@ def map_k(true_items, predictions, K=3):
     return map_at_k / U
 
 
+def mistake_idx(true_items, predictions):
+    """
+    trueとpredのtop1がそれぞれ違うidxを返す
+    """
+    U = len(predictions)
+    mistake_idx = []
+    for u in range(U):
+        user_preds = predictions[u]
+        user_true = true_items[u]
+        if user_preds[0] != user_true:
+            mistake_idx.append(u)
+    return mistake_idx
+
+
 option_to_index = {option: idx for idx, option in enumerate("ABCDE")}
 index_to_option = {v: k for k, v in option_to_index.items()}
 
@@ -80,6 +94,9 @@ def main(c: DictConfig) -> None:
     pred2 = np.max(pred2_list, axis=0)
     pred3 = np.max(pred3_list, axis=0)
 
+    # 確率値を保存
+    np.save(output_path / "data2_pred.npy", pred2)
+
     pred2 = predictions_to_map_output(pred2)
     pred3 = predictions_to_map_output(pred3)
     true2 = data2["answer"].values
@@ -87,6 +104,10 @@ def main(c: DictConfig) -> None:
     map2 = map_k(true2, pred2)
     map3 = map_k(true3, pred3)
     print(f"map2:{map2}, map3:{map3}")
+
+    # top1 の予測が違うidxを抽出
+    print("mistake_idx2:", mistake_idx(true2, pred2))
+    print("mistake_idx3:", mistake_idx(true3, pred3))
 
 
 if __name__ == "__main__":
