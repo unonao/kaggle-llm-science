@@ -18,7 +18,7 @@ from datasets import Dataset
 from hydra.core.hydra_config import HydraConfig
 from omegaconf import DictConfig, OmegaConf
 from transformers import (
-    AutoModelForSequenceClassification,
+    AutoModelForMultipleChoice,
     AutoTokenizer,
     EarlyStoppingCallback,
     Trainer,
@@ -36,6 +36,36 @@ import utils
 
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 os.environ["TRANSFORMERS_NO_ADVISORY_WARNINGS"] = "true"
+
+
+@dataclass
+class DataCollatorForMultipleChoice:
+    tokenizer: PreTrainedTokenizerBase
+    padding: Union[bool, str, PaddingStrategy] = True
+    max_length: Optional[int] = None
+    pad_to_multiple_of: Optional[int] = None
+
+    def __call__(self, features):
+        label_name = "label" if "label" in features[0].keys() else "labels"
+        # labels = [feature.pop(label_name) for feature in features]
+        soft_labels = [feature.pop(label_name) for feature in features]
+        batch_size = len(features)
+        num_choices = len(features[0]["input_ids"])
+        flattened_features = [
+            [{k: v[i] for k, v in feature.items()} for i in range(num_choices)] for feature in features
+        ]
+        flattened_features = sum(flattened_features, [])
+
+        batch = self.tokenizer.pad(
+            flattened_features,
+            padding=self.padding,
+            max_length=self.max_length,
+            pad_to_multiple_of=self.pad_to_multiple_of,
+            return_tensors="pt",
+        )
+        batch = {k: v.view(batch_size, num_choices, -1) for k, v in batch.items()}
+        batch["labels"] = torch.tensor(soft_labels, dtype=torch.float32)
+        return batch
 
 
 def clean_text(text):
@@ -99,6 +129,8 @@ def main(c: DictConfig) -> None:
         df_train = df_train.head(10)
         df_valid = df_valid.head(10)
 
+    print(df_train.head())
+
     print(f"train:{df_train.shape}, valid:{df_valid.shape}")
 
     # 最大正解率（first, secondに答えが含まれている確率）
@@ -119,35 +151,12 @@ def main(c: DictConfig) -> None:
         df["first_option_text"] = df.apply(lambda row: row[row["first_option"]], axis=1)
         df["second_option_text"] = df.apply(lambda row: row[row["second_option"]], axis=1)
 
-        # other を削除
-        df = df[df["answer_location"] != "other"].reset_index(drop=True)
+        df["prompt_with_context"] = (
+            df["context"].apply(lambda x: " ".join(x.split()[:max_length])) + f"... [SEP] " + df["prompt"]
+        )
+        df["prompt_with_context"] = df["prompt_with_context"].apply(clean_text)
 
-        # first_option が先に来るケースと、second_option が先に来るケースの２つを作る
-        df_first = df.copy()
-        df_first["text"] = (
-            df_first["prompt"]
-            + " [SEP] Wrong: "
-            + df_first["second_option_text"]
-            + " [SEP] Correct: "
-            + df_first["first_option_text"]  # ここが正解かどうか
-        )
-        df_first["label"] = df_first["answer_location"].map({"first": 1, "second": 0})
-        """
-        df_second = df.copy()
-        df_second["text"] = (
-            df_second["prompt"]
-            + " [SEP] Wrong: "
-            + df_second["first_option_text"]
-            + " [SEP] Correct: "
-            + df_second["second_option_text"]  # ここが正解なら [0, 1]
-        )
-        df_second["label"] = df_second["answer_location"].map({"first": 0, "second": 1})
-        result_df = pd.concat([df_first, df_second]).reset_index(drop=True)
-        """
-        result_df = pd.concat([df_first]).reset_index(drop=True)
-        result_df["text"] = result_df["text"].apply(clean_text)
-        result_df["context"] = result_df["context"].apply(clean_text)
-        return result_df
+        return df
 
     df_train_processed = preprocess_df(df_train)
     df_valid_processed = preprocess_df(df_valid, mode="valid")
@@ -158,20 +167,32 @@ def main(c: DictConfig) -> None:
     tokenizer = AutoTokenizer.from_pretrained(cfg.model_name)
 
     def preprocess(example):
-        tokenized_example = tokenizer(
-            example["text"],
-            example["context"],
-            truncation="longest_first",
-            max_length=512,
-        )
-        tokenized_example["labels"] = example["label"]  # クラス0: 後半に正解が含まれる確率, クラス1: 前半に正解が含まれる確率
+        sentences = [
+            example["prompt_with_context"]
+            + f" [SEP] "
+            + example["second_option_text"]
+            + f" [SEP] "
+            + example["first_option_text"],
+            example["prompt_with_context"]
+            + f" [SEP] "
+            + example["first_option_text"]
+            + f" [SEP] "
+            + example["second_option_text"],
+        ]
+        tokenized_example = tokenizer(sentences, truncation=False)
+        if example["answer_location"] == "first":
+            tokenized_example["label"] = [1.0, 0.0]
+        elif example["answer_location"] == "second":
+            tokenized_example["label"] = [0.0, 1.0]
+        else:
+            tokenized_example["label"] = [0.5, 0.5]
         return tokenized_example
 
     tokenized_dataset_train = dataset_train.map(
-        preprocess, remove_columns=["prompt", "A", "B", "C", "D", "E", "answer"]
+        preprocess, remove_columns=["prompt_with_context", "prompt", "A", "B", "C", "D", "E", "answer"]
     )
     tokenized_dataset_valid = dataset_valid.map(
-        preprocess, remove_columns=["prompt", "A", "B", "C", "D", "E", "answer"]
+        preprocess, remove_columns=["prompt_with_context", "prompt", "A", "B", "C", "D", "E", "answer"]
     )
 
     def compute_metrics(eval_preds):
@@ -179,20 +200,35 @@ def main(c: DictConfig) -> None:
         正解率を計算する
         """
         logits, labels = eval_preds
+        logits = torch.softmax(torch.tensor(logits), dim=1).numpy()
         pred_ids = np.argmax(logits, axis=1)
-        correct = pred_ids == labels
+        latter = labels[:, 0]
+        latter[latter < 0.6] = 0
+        latter[latter > 0.6] = 1
+        former = labels[:, 1]
+        former[former < 0.6] = 0
+        former[former > 0.6] = 1
+
+        latter = latter.astype(int)
+        former = former.astype(int)
+
+        # 後半に正解が含まれると予測
+        latter_correct = (pred_ids == 0) & (latter == 1)
+        # 前半に正解が含まれると予測
+        former_correct = (pred_ids == 1) & (former == 1)
+        correct = latter_correct | former_correct
         return {"accuracy": correct.mean()}
 
     ## Training
     training_args = TrainingArguments(**OmegaConf.to_container(cfg)["training_args"])
 
-    config = AutoConfig.from_pretrained(cfg.model_name, num_labels=2, problem_type="single_label_classification")
-    model = AutoModelForSequenceClassification.from_pretrained(cfg.model_name, config=config)
+    model = AutoModelForMultipleChoice.from_pretrained(cfg.model_name)
 
     trainer = Trainer(
         model=model,
         args=training_args,
         tokenizer=tokenizer,
+        data_collator=DataCollatorForMultipleChoice(tokenizer=tokenizer),
         train_dataset=tokenized_dataset_train,
         eval_dataset=tokenized_dataset_valid,
         callbacks=[EarlyStoppingCallback(early_stopping_patience=cfg.early_stopping_patience)],
@@ -211,11 +247,9 @@ def main(c: DictConfig) -> None:
         # 元々の正解率
         original_prob = (df_valid_processed["answer"] == df_valid_processed["first_option"]).mean()
         # 予測による正解率
-        original_len = len(df_valid_processed) // 2
-        pred = (valid_pred[:original_len] + valid_pred[original_len:, [1, 0]]) / 2
         predict_prob = (
-            np.argmax(pred, axis=1)  # 前半分は後半がfirst, 前半がsecond
-            == df_valid_processed.head(original_len)["answer_location"].map({"first": 1, "second": 0, "other": -1})
+            np.argmax(valid_pred, axis=1)  # 前半分は後半がfirst, 前半がsecond
+            == df_valid_processed["answer_location"].map({"first": 0, "second": 1, "other": -1})
         ).mean()
 
         result_dict = {

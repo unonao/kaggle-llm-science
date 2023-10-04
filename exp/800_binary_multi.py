@@ -114,57 +114,53 @@ def main(c: DictConfig) -> None:
         # 空を埋める
         options = ["A", "B", "C", "D", "E"]
         for option in options:
-            df[option] = df[option].fillna("No text.")
-
-        df["first_option_text"] = df.apply(lambda row: row[row["first_option"]], axis=1)
-        df["second_option_text"] = df.apply(lambda row: row[row["second_option"]], axis=1)
-
-        # other を削除
-        df = df[df["answer_location"] != "other"].reset_index(drop=True)
+            df[option] = df[option].fillna("")
 
         # first_option が先に来るケースと、second_option が先に来るケースの２つを作る
         df_first = df.copy()
         df_first["text"] = (
-            df_first["prompt"]
+            df_first["context"].apply(lambda x: " ".join(x.split()[:max_length]))
+            + f"... [SEP]  "
+            + df_first["prompt"]
             + " [SEP] Wrong: "
-            + df_first["second_option_text"]
+            + df_first["second_option"]
             + " [SEP] Correct: "
-            + df_first["first_option_text"]  # ここが正解かどうか
+            + df_first["first_option"]  # ここが正解なら [0, 1]
         )
-        df_first["label"] = df_first["answer_location"].map({"first": 1, "second": 0})
-        """
+        df_first["label"] = df_first["answer_location"].map(
+            {"first": [0.0, 1.0], "second": [1.0, 0.0], "other": [0.0, 0.0]}
+        )
+
         df_second = df.copy()
         df_second["text"] = (
-            df_second["prompt"]
+            df_second["context"].apply(lambda x: " ".join(x.split()[:max_length]))
+            + f"... [SEP]  "
+            + df_second["prompt"]
             + " [SEP] Wrong: "
-            + df_second["first_option_text"]
+            + df_second["first_option"]
             + " [SEP] Correct: "
-            + df_second["second_option_text"]  # ここが正解なら [0, 1]
+            + df_second["second_option"]  # ここが正解なら [0, 1]
         )
-        df_second["label"] = df_second["answer_location"].map({"first": 0, "second": 1})
-        result_df = pd.concat([df_first, df_second]).reset_index(drop=True)
-        """
-        result_df = pd.concat([df_first]).reset_index(drop=True)
-        result_df["text"] = result_df["text"].apply(clean_text)
-        result_df["context"] = result_df["context"].apply(clean_text)
-        return result_df
+        df_second["label"] = df_second["answer_location"].map(
+            {"first": [1.0, 0.0], "second": [0, 1.0], "other": [0.0, 0.0]}
+        )
 
-    df_train_processed = preprocess_df(df_train)
-    df_valid_processed = preprocess_df(df_valid, mode="valid")
+        df = pd.concat([df_first, df_second]).reset_index(drop=True)
+        df["text"] = df["text"].apply(clean_text)
 
-    dataset_train = Dataset.from_pandas(df_train_processed)
-    dataset_valid = Dataset.from_pandas(df_valid_processed)
+        return df
+
+    df_train = preprocess_df(df_train)
+    df_valid = preprocess_df(df_valid, mode="valid")
+
+    dataset_train = Dataset.from_pandas(df_train)
+    dataset_valid = Dataset.from_pandas(df_valid)
 
     tokenizer = AutoTokenizer.from_pretrained(cfg.model_name)
 
     def preprocess(example):
-        tokenized_example = tokenizer(
-            example["text"],
-            example["context"],
-            truncation="longest_first",
-            max_length=512,
-        )
-        tokenized_example["labels"] = example["label"]  # クラス0: 後半に正解が含まれる確率, クラス1: 前半に正解が含まれる確率
+        tokenized_example = tokenizer(example["text"], truncation=False)
+        tokenized_example["label"] = example["label"]  # クラス0: 後半に正解が含まれる確率, クラス1: 前半に正解が含まれる確率
         return tokenized_example
 
     tokenized_dataset_train = dataset_train.map(
@@ -179,14 +175,29 @@ def main(c: DictConfig) -> None:
         正解率を計算する
         """
         logits, labels = eval_preds
+        labels = np.array(labels)
         pred_ids = np.argmax(logits, axis=1)
-        correct = pred_ids == labels
+        latter = labels[:, 0]
+        latter[latter < 0.6] = 0
+        latter[latter > 0.6] = 1
+        former = labels[:, 1]
+        former[former < 0.6] = 0
+        former[former > 0.6] = 1
+
+        latter = latter.astype(int)
+        former = former.astype(int)
+
+        # 後半に正解が含まれると予測
+        latter_correct = (pred_ids == 1) & (latter == 1)
+        # 前半に正解が含まれると予測
+        former_correct = (pred_ids == 0) & (former == 1)
+        correct = latter_correct | former_correct
         return {"accuracy": correct.mean()}
 
     ## Training
     training_args = TrainingArguments(**OmegaConf.to_container(cfg)["training_args"])
 
-    config = AutoConfig.from_pretrained(cfg.model_name, num_labels=2, problem_type="single_label_classification")
+    config = AutoConfig.from_pretrained(cfg.model_name, num_labels=2, problem_type="multi_label_classification")
     model = AutoModelForSequenceClassification.from_pretrained(cfg.model_name, config=config)
 
     trainer = Trainer(
@@ -204,18 +215,17 @@ def main(c: DictConfig) -> None:
 
     with utils.timer("valid"):
         valid_pred = trainer.predict(tokenized_dataset_valid).predictions
-        valid_pred = torch.softmax(torch.tensor(valid_pred), dim=1).numpy()
 
         # 最大正解率（first, secondに答えが含まれている確率）
-        max_prob = (df_valid_processed["answer_location"] != "other").mean()
+        max_prob = (df_valid["answer_location"] != "other").mean()
         # 元々の正解率
-        original_prob = (df_valid_processed["answer"] == df_valid_processed["first_option"]).mean()
+        original_prob = (df_valid["answer"] == df_valid["first_option"]).mean()
         # 予測による正解率
-        original_len = len(df_valid_processed) // 2
+        original_len = len(df_valid) // 2
         pred = (valid_pred[:original_len] + valid_pred[original_len:, [1, 0]]) / 2
         predict_prob = (
             np.argmax(pred, axis=1)  # 前半分は後半がfirst, 前半がsecond
-            == df_valid_processed.head(original_len)["answer_location"].map({"first": 1, "second": 0, "other": -1})
+            == df_valid.head(original_len)["answer_location"].map({"first": 1, "second": 0, "other": -1})
         ).mean()
 
         result_dict = {
