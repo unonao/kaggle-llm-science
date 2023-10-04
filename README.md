@@ -119,7 +119,7 @@ kaggle datasets version -p llm-science-wikipedia  -m v1.0.0
 
 kaggle datasets init -p llm-science-lgb
 kaggle datasets create -p llm-science-lgb --dir-mode zip
-kaggle datasets version -p dataset/llm-science-lgb  -m v1.4.0
+kaggle datasets version -p dataset/llm-science-lgb  -m v1.5.0
 
 ```
 
@@ -133,24 +133,19 @@ python preprocess/510_retrieval.py preprocess=510/split_nparse_multi
 python exp/350_1st_infer.py exp=350/split_nparse_multi
 
 # これから
-python preprocess/501_index_split.py preprocess=501/parse_bge
-python preprocess/501_index_split.py preprocess=501/parse_multi
-python preprocess/510_retrieval.py preprocess=510/split_parse_bge
-python preprocess/510_retrieval.py preprocess=510/split_parse_multi
-python exp/350_1st_infer.py exp=350/split_parse_bge
-python exp/350_1st_infer.py exp=350/split_parse_multi
+python exp/800_binary.py exp=800/000
 ```
 
 ```sh
 # lightgbm
-python preprocess/330_retrieve_a.py preprocess=330_retrieve_a/a_gte_10_3_2
-python preprocess/330_retrieve_a.py preprocess=330_retrieve_a/a_gte_10_4_3
-python preprocess/330_retrieve_a.py preprocess=331_retrieve_b/b_bge_10_4_3
-python preprocess/330_retrieve_a.py preprocess=331_retrieve_b/b_multi_10_4_3
-python exp/350_1st_infer.py exp=350_1st_infer/a_gte_10_3_2
-python exp/350_1st_infer.py exp=350_1st_infer/a_gte_10_4_3
-python exp/350_1st_infer.py exp=350_1st_infer/b_bge_10_4_3
-python exp/350_1st_infer.py exp=350_1st_infer/b_multi_10_4_3
+python preprocess/330_retrieve_a.py preprocess=330/a_gte_10_3_2
+python preprocess/330_retrieve_a.py preprocess=330/a_gte_10_4_3
+python preprocess/330_retrieve_a.py preprocess=331/b_bge_10_4_3
+python preprocess/330_retrieve_a.py preprocess=331/b_multi_10_4_3
+python exp/350_1st_infer.py exp=350/a_gte_10_3_2
+python exp/350_1st_infer.py exp=350/a_gte_10_4_3
+python exp/350_1st_infer.py exp=350/b_bge_10_4_3
+python exp/350_1st_infer.py exp=350/b_multi_10_4_3
 python preprocess/340_2nd_data.py preprocess=340/a_gte_10_3_2 
 python preprocess/340_2nd_data.py preprocess=340/a_gte_10_4_3
 python preprocess/340_2nd_data.py preprocess=340/b_bge_10_4_3

@@ -165,7 +165,7 @@ def relevant_title_retrieval(
     res = faiss.StandardGpuResources()  # use a single GPU
     co = faiss.GpuClonerOptions()
     co.useFloat16 = True
-    sentence_index = faiss.index_cpu_to_gpu(res, 0, sentence_index, co)
+    # sentence_index = faiss.index_cpu_to_gpu(res, 0, sentence_index, co)
     sentence_index.nprobe = 10
     prompt_embeddings = model.encode(
         df.prompt_answer_stem.values,
@@ -365,6 +365,7 @@ def main(c: DictConfig) -> None:
         wiki_data_embeddings = wiki_data_embeddings.astype(np.float32)
         # print data size(GB) of wiki_data_embeddings
         print("wiki_data_embeddings size(GB):", sys.getsizeof(wiki_data_embeddings) / 1024**3)
+        print(wiki_data_embeddings[0, :10])
 
         _ = gc.collect()
         torch.cuda.empty_cache()
@@ -383,6 +384,7 @@ def main(c: DictConfig) -> None:
         df.drop(["answer_all", "prompt_answer_stem"], axis=1, inplace=True)
         # question_embeddings = question_embeddings.detach().cpu().numpy()
         torch.cuda.empty_cache()
+        print(question_embeddings[0, :10])
 
         ## Extract contexts from matching pairs
         print("【Extract contexts from matching pairs】")

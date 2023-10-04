@@ -166,7 +166,7 @@ def relevant_title_retrieval(
     res = faiss.StandardGpuResources()  # use a single GPU
     co = faiss.GpuClonerOptions()
     co.useFloat16 = True
-    sentence_index = faiss.index_cpu_to_gpu(res, 0, sentence_index, co)
+    # sentence_index = faiss.index_cpu_to_gpu(res, 0, sentence_index, co)
     sentence_index.nprobe = 10
     prompt_embeddings = model.encode(
         df.prompt_answer_stem.values,
@@ -177,6 +177,7 @@ def relevant_title_retrieval(
         normalize_embeddings=True,
     )
     prompt_embeddings = prompt_embeddings.astype(np.float32)
+    print(prompt_embeddings[0, :10])
     # prompt_embeddings = prompt_embeddings.detach().cpu().numpy()
     search_score, search_index = sentence_index.search(prompt_embeddings, top_k)
     res.noTempMemory()
@@ -287,6 +288,7 @@ def main(c: DictConfig) -> None:
     print(cfg)
     print("preprocessed_path:", preprocessed_path)
 
+    utils.seed_everything()
     # モデル読み込み
     model = SentenceTransformer(cfg.sim_model, device="cuda")
     model.max_seq_length = cfg.max_length
@@ -360,6 +362,7 @@ def main(c: DictConfig) -> None:
         wiki_data_embeddings = wiki_data_embeddings.astype(np.float32)
         _ = gc.collect()
         torch.cuda.empty_cache()
+        print(wiki_data_embeddings[0, :10])
 
         ## Combine all answers
         print("【Combine all answers】")
@@ -375,6 +378,7 @@ def main(c: DictConfig) -> None:
         df.drop(["answer_all", "prompt_answer_stem"], axis=1, inplace=True)
         # question_embeddings = question_embeddings.detach().cpu().numpy()
         torch.cuda.empty_cache()
+        print(question_embeddings[0, :10])
 
         ## Extract contexts from matching pairs
         print("【Extract contexts from matching pairs】")

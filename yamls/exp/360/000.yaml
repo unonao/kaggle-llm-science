@@ -8,9 +8,10 @@ max_length: 150
 max_length_valid: 300
 
 data:
-  #- preprocessed/331_retrieve_b/000/data0_0.csv
-  #- preprocessed/331_retrieve_b/000/data0_10000.csv
-  #- preprocessed/331_retrieve_b/000/data0_20000.csv
-  #- preprocessed/331_retrieve_b/000/data0_30000.csv
-  #- preprocessed/331_retrieve_b/000/data0_40000.csv
+  - preprocessed/331_retrieve_b/000/data0_0.csv
+  - preprocessed/331_retrieve_b/000/data0_10000.csv
+  - preprocessed/331_retrieve_b/000/data0_20000.csv
+  - preprocessed/331_retrieve_b/000/data0_30000.csv
+  - preprocessed/331_retrieve_b/000/data0_40000.csv
   - preprocessed/331_retrieve_b/000/data0_50000.csv
+  - preprocessed/331_retrieve_b/000/data2.csv

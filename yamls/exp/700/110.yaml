@@ -1,0 +1,67 @@
+data1_path: preprocessed/901_concat/data1.csv 
+data2_path: preprocessed/901_concat/data2.csv
+data3_path: input/kaggle-llm-science-exam/train.csv
+
+
+lgbm:
+  verbose_eval: 50
+  num_boost_round: 2000
+  params:
+    early_stopping_round: 50
+    lambda_l1: 0.2
+    lambda_l2: 0.2
+    num_leaves: 16 # 大きいほど過学習
+    feature_fraction: 0.8
+    bagging_fraction: 0.5 # 大きいほど過学習
+    bagging_freq: 1
+    min_child_samples: 50 # 小さいほど過学習
+    task: train
+    boosting_type: gbdt
+    objective: binary
+    metric: binary_logloss
+    ndcg_eval_at: []
+    max_depth: 2
+    learning_rate: 0.05
+    num_thread: -1
+    max_bin: 32
+    verbose: -1
+    device: cpu
+    scale_pos_weight: 1
+    seed: 777
+    num_class: 1
+  
+
+pred_dirs:
+  - output/350_1st_infer/tfidf
+  #- output/350_1st_infer/tfidf_gpu
+
+  # retrieval 変更無し
+  - output/350_1st_infer/a_gte_10_3_2
+  - output/350_1st_infer/a_gte_10_4_3
+  #- output/350_1st_infer/b_bge_10_3_2
+  - output/350_1st_infer/b_bge_10_4_3
+  #- output/350_1st_infer/b_bge_10_5_4
+  - output/350_1st_infer/new_b_multi_10_4_3
+  - output/350_1st_infer/b_multi_10_5_4
+
+  # retrieval 変更あり
+  #- output/350_1st_infer/new_b_bge_base_10_4_3
+
+  #- output/350_1st_infer/parse_multi
+  - output/350_1st_infer/nparse_multi
+  #- output/350_1st_infer/parse_bge
+  #- output/350_1st_infer/nparse_bge
+  #- output/350_1st_infer/parse_e5
+  #- output/350_1st_infer/nparse_e5
+  #- output/350_1st_infer/parse_gte
+  #- output/350_1st_infer/nparse_gte
+  - output/350_1st_infer/parse_bge_base
+  - output/350_1st_infer/nparse_bge_base
+  #- output/350_1st_infer/parse_gte_base
+  #- output/350_1st_infer/nparse_gte_base
+  #- output/350_1st_infer/parse_e5_base
+  #- output/350_1st_infer/nparse_e5_base
+  #- output/350_1st_infer/parse_multi_base
+  #- output/350_1st_infer/nparse_multi_base
+  #- output/350_1st_infer/parse_bge_large
+
