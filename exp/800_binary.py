@@ -99,6 +99,13 @@ def main(c: DictConfig) -> None:
 
     print(f"train:{df_train.shape}, valid:{df_valid.shape}")
 
+    # 最大正解率（first, secondに答えが含まれている確率）
+    max_prob = (df_valid["answer_location"] != "other").mean()
+    # 元々の正解率
+    original_prob = (df_valid["answer"] == df_valid["first_option"]).mean()
+    print()
+    print(f"max_prob: {max_prob}, original_prob: {original_prob}")
+
     def preprocess_df(df, mode="train"):
         max_length = cfg.max_length if mode == "train" else cfg.max_length_valid  # 推論時はtokenを長く取る
         # 空を埋める
@@ -185,13 +192,12 @@ def main(c: DictConfig) -> None:
         # 元々の正解率
         original_prob = (df_valid["answer"] == df_valid["first_option"]).mean()
         # 予測による正解率
+        original_len = len(df_valid) // 2
+        pred = (valid_pred[: original_len] + (1.0-valid_pred[original_len:]))/ 2 
         predict_prob = (
-            np.argmax(valid_pred, axis=1)[: len(df_valid) // 2]  # 前半分は後半がfirst, 前半がsecond
-            == df_valid.head(len(df_valid) // 2)["answer_location"].map({"first": 0, "second": 1, "other": -1})
-        ).mean() / 2 + (
-            np.argmax(valid_pred, axis=1)[len(df_valid) // 2 :]
-            == df_valid.head(len(df_valid) // 2)["answer_location"].map({"first": 1, "second": 0, "other": -1})
-        ).mean() / 2
+            np.argmax(pred, axis=1) # 前半分は後半がfirst, 前半がsecond
+            == df_valid.head(original_len)["answer_location"].map({"first": 0, "second": 1, "other": -1})
+        ).mean() 
 
         result_dict = {
             "max_prob": max_prob,

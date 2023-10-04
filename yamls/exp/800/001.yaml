@@ -1,0 +1,28 @@
+# b
+defaults:
+  - 800/base@_here_
+
+model_name: microsoft/deberta-v3-large
+early_stopping_patience: 5
+
+training_args:
+  gradient_accumulation_steps: 1
+  gradient_checkpointing: true
+  per_device_train_batch_size: 4
+  per_device_eval_batch_size: 2
+  optim: adamw_bnb_8bit
+  num_train_epochs: 5
+
+max_length: 150
+max_length_valid: 300
+
+data0_paths: 
+  - preprocessed/331_retrieve_b/000/data0_0.csv
+  - preprocessed/331_retrieve_b/000/data0_10000.csv
+  - preprocessed/331_retrieve_b/000/data0_20000.csv
+  - preprocessed/331_retrieve_b/000/data0_30000.csv
+  - preprocessed/331_retrieve_b/000/data0_40000.csv
+  - preprocessed/331_retrieve_b/000/data0_50000.csv
+soft_label_dir: output/360_infer_label/000
+data1_path: preprocessed/331_retrieve_b/000/data1.csv
+data2_path: preprocessed/331_retrieve_b/000/data2.csv
