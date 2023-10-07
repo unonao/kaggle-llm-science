@@ -1,0 +1,56 @@
+# map2:0.8833333333333324, map3:0.9866666666666667
+# 651 map2:0.8886666666666657, map3:0.9966666666666666
+
+tfidf_path: preprocessed/332_tfidf/000/val_500_enhanced.csv
+
+pred_dirs:
+  - output/370_1st_infer/tfidf
+  #- output/370_1st_infer/tfidf1_3
+  #- output/370_1st_infer/tfidf_gpu
+
+
+  # retrieval 変更無し
+  - output/370_1st_infer/a_gte_10_3_2
+  #- output/370_1st_infer/new_a_gte_10_3_2
+  - output/370_1st_infer/a_gte_10_4_3
+  #- output/370_1st_infer/new_a_gte_10_4_3
+  #- output/370_1st_infer/b_bge_10_3_2
+  - output/370_1st_infer/b_bge_10_4_3
+  #- output/370_1st_infer/new_b_bge_10_4_3
+  #- output/370_1st_infer/b_bge_10_5_4
+  #- output/370_1st_infer/b_bge_base_10_4_3
+  #- output/370_1st_infer/b_multi_10_4_3
+  - output/370_1st_infer/b_multi_10_5_4
+  - output/370_1st_infer/new_b_multi_10_4_3
+
+
+  #- output/370_1st_infer/nparse_bge
+  - output/370_1st_infer/nparse_bge_base
+  #- output/370_1st_infer/nparse_bge_large
+  #- output/370_1st_infer/nparse_e5
+  #- output/370_1st_infer/nparse_e5_base
+  #- output/370_1st_infer/nparse_gte
+  #- output/370_1st_infer/nparse_gte_base
+  - output/370_1st_infer/nparse_multi
+  #- output/370_1st_infer/nparse_multi_base
+  #- output/370_1st_infer/split_nparse_multi
+  #- output/370_1st_infer/parse_bge
+  - output/370_1st_infer/parse_bge_base
+  #- output/370_1st_infer/parse_bge_large
+  #- output/370_1st_infer/parse_e5
+  #- output/370_1st_infer/parse_e5_base
+  #- output/370_1st_infer/parse_e5_large
+  #- output/370_1st_infer/parse_gte
+  #- output/370_1st_infer/parse_multi
+  #- output/370_1st_infer/parse_multi_base
+  #- output/370_1st_infer/split_nparse_bge
+  #- output/370_1st_infer/split_nparse_multi
+  #- output/370_1st_infer/split_parse_bge
+  #- output/370_1st_infer/split_parse_multi
+
+# 未実行
+  #- output/370_1st_infer/new_b_bge_base_10_4_3
+  #- output/370_1st_infer/nparse_gte_large
+  #- output/370_1st_infer/parse_gte_base
+  #- output/370_1st_infer/parse_gte_large
+  #- output/370_1st_infer/parse_multi_large

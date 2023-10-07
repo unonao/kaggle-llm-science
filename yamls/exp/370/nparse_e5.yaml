@@ -1,0 +1,12 @@
+model_path: output/300_1st/000/checkpoint-60000
+sep_token : [SEP]
+
+debug: ${debug}
+seed: 7
+
+max_length: 150
+max_length_valid: 300
+
+data1_path: preprocessed/510_retrieval/nparse_e5/data1.csv
+data2_path: preprocessed/510_retrieval/nparse_e5/data2.csv
+data3_path: preprocessed/510_retrieval/nparse_e5/train.csv

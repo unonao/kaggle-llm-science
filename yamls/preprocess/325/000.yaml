@@ -1,5 +1,5 @@
-window_size: 3
-sliding_size: 2
+window_size: 5
+sliding_size: 4
 parquet_dir: input/llm-science-wikipedia-data-b
 
 

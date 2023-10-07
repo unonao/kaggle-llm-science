@@ -1,7 +1,8 @@
 data_paths:
-  - input/kaggle-llm-science-exam/train.csv
-  - preprocessed/901_concat/data2.csv
-  - preprocessed/901_concat/data1.csv 
+  - input/validation-500/val_500_enhanced.csv
+  # - input/kaggle-llm-science-exam/train.csv
+  #- preprocessed/901_concat/data1.csv
+  #- preprocessed/901_concat/data2.csv
   
 filter_wiki_path: preprocessed/500_index/all-paraphs-parsed-expanded.parquet
 index_path: preprocessed/500_index/parse_multi/index.faiss

@@ -1,0 +1,46 @@
+fts_path: dataset/llm-science-fts/fts.db # TODO: change
+tfidf_path: preprocessed/334_tfidf_gpu/000/data2.csv
+model_path: output/300_1st/000/checkpoint-60000
+
+fts_time_limit: 600 # sec
+# map2:0.9083333333333343, map3:0.9866666666666667
+# 300: map2:0.9097222222222231, map3:0.9866666666666667, map2:0.9108333333333343, map3:0.9933333333333334
+# 600: map2:0.9100000000000009, map3:0.9866666666666667, map2:0.911111111111112, map3:0.9966666666666666
+# 1200: map2:0.9097222222222232, map3:0.9866666666666667, map2:0.9108333333333343, map3:0.9966666666666666
+
+pred_dirs:
+  #- output/350_1st_infer/tfidf
+  - output/350_1st_infer/tfidf_gpu
+
+  # retrieval 変更無し
+  - output/350_1st_infer/a_gte_10_3_2
+  - output/350_1st_infer/a_gte_10_4_3
+  #- output/350_1st_infer/b_bge_10_3_2
+  - output/350_1st_infer/b_bge_10_4_3
+  #- output/350_1st_infer/b_bge_10_5_4
+  - output/350_1st_infer/new_b_multi_10_4_3
+  - output/350_1st_infer/b_multi_10_5_4
+
+  # retrieval 変更あり
+  #- output/350_1st_infer/new_b_bge_base_10_4_3
+
+  #- output/350_1st_infer/parse_multi
+  - output/350_1st_infer/nparse_multi
+  #- output/350_1st_infer/parse_bge
+  #- output/350_1st_infer/nparse_bge
+  #- output/350_1st_infer/parse_e5
+  #- output/350_1st_infer/nparse_e5
+  #- output/350_1st_infer/parse_gte
+  #- output/350_1st_infer/nparse_gte
+  - output/350_1st_infer/parse_bge_base
+  - output/350_1st_infer/nparse_bge_base
+  #- output/350_1st_infer/parse_gte_base
+  #- output/350_1st_infer/nparse_gte_base
+  #- output/350_1st_infer/parse_e5_base
+  #- output/350_1st_infer/nparse_e5_base
+  #- output/350_1st_infer/parse_multi_base
+  #- output/350_1st_infer/nparse_multi_base
+  #- output/350_1st_infer/parse_bge_large
+
+
+debug: ${debug}

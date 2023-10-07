@@ -1,7 +1,8 @@
 data_paths:
+  - input/validation-500/val_500_enhanced.csv
   - input/kaggle-llm-science-exam/train.csv
-  - preprocessed/901_concat/data2.csv
-  - preprocessed/901_concat/data1.csv 
+  #- preprocessed/901_concat/data1.csv
+  #- preprocessed/901_concat/data2.csv
   
 wiki_dir: input/llm-science-wikipedia-data-b 
 wiki_index_path: preprocessed/320_doc_index/004/all.parquet # b
