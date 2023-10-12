@@ -21,4 +21,6 @@ RUN pip install --no-cache-dir \
     faiss-gpu==1.7.2 sentence-transformers blingfire==0.1.8 peft==0.4.0 datasets==2.14.3 trl==0.5.0 triton
 
 RUN pip install bitsandbytes pandarallel
-RUN pip install transformers llama-index optimum[exporters] einops
+RUN pip install transformers llama-index optimum[exporters] einops optimum
+RUN pip3 install auto-gptq --extra-index-url https://huggingface.github.io/autogptq-index/whl/cu118/  # Use cu117 if on CUDA 11.7
+

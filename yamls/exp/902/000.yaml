@@ -2,14 +2,15 @@ fts_path: dataset/llm-science-fts-split
 tfidf_path: preprocessed/334_tfidf_gpu/000/data2.csv
 model_path: output/300_1st/000/checkpoint-60000
 
-fts_num: 1 # num
-
+fts_num: 400 # num
+# 200: map2:0.9100000000000009, map3:0.9866666666666667  map2:0.9100000000000009, map3:0.9933333333333334
+# 400: map2:0.9108333333333343, map3:0.9866666666666667  map2:0.9108333333333343, map3:0.9966666666666666
 pred_dirs:
   #- output/350_1st_infer/tfidf
   - output/350_1st_infer/tfidf_gpu
 
   # retrieval 変更無し
-  #- output/350_1st_infer/a_gte_10_3_2
+  - output/350_1st_infer/a_gte_10_3_2
   - output/350_1st_infer/a_gte_10_4_3
   #- output/350_1st_infer/b_bge_10_3_2
   - output/350_1st_infer/b_bge_10_4_3
