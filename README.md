@@ -1,4 +1,4 @@
-# Kaggle - LLM Science Exam 11th solution
+# Kaggle - LLM Science Exam 10th Place Solution
 
 ## How to use
 
